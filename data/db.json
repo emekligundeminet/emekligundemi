@@ -1,0 +1,19 @@
+{
+  "categories": [
+    {
+      "id": "cat-gundem",
+      "name": "Gündem",
+      "slug": "gundem",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": "cat-ekonomi",
+      "name": "Ekonomi",
+      "slug": "ekonomi",
+      "meta_title": null,
+      "meta_description": null
+    }
+  ],
+  "articles": []
+}

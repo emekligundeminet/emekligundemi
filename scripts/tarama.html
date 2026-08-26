@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Haberbot — Emeklilik taraması</title>
+    <style>
+      :root {
+        --paper: #f3ead7;
+        --ink: #1c1612;
+        --muted: #6d6258;
+        --rule: #d4c4a8;
+        --card: #fffaf0;
+        --red: #b42318;
+        --red-soft: #f3d6d0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background:
+          radial-gradient(ellipse at top, #f7f0e0 0%, var(--paper) 55%),
+          var(--paper);
+        color: var(--ink);
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+      }
+
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 28px 20px 64px;
+      }
+
+      header {
+        border-top: 8px solid var(--ink);
+        border-bottom: 1px solid var(--ink);
+        padding: 18px 0 16px;
+        margin-bottom: 22px;
+      }
+
+      .kicker {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin: 8px 0 0;
+        font-family: Palatino, "Iowan Old Style", "Times New Roman", serif;
+        font-size: clamp(32px, 6vw, 48px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.95;
+      }
+
+      h1 span {
+        color: var(--red);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 16px;
+      }
+
+      .chip {
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 12px;
+        padding: 6px 10px;
+        letter-spacing: 0.04em;
+      }
+
+      .chip.soft {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--rule);
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--ink);
+        background: var(--card);
+        color: var(--ink);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      button:disabled {
+        opacity: 0.45;
+        cursor: wait;
+      }
+
+      .status {
+        min-height: 22px;
+        margin: 8px 0 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .bar {
+        height: 3px;
+        background: var(--rule);
+        overflow: hidden;
+        margin-bottom: 22px;
+        display: none;
+      }
+
+      .bar.on {
+        display: block;
+      }
+
+      .bar i {
+        display: block;
+        height: 100%;
+        width: 40%;
+        background: var(--red);
+        animation: slide 1.1s ease-in-out infinite;
+      }
+
+      @keyframes slide {
+        from {
+          transform: translateX(-120%);
+        }
+        to {
+          transform: translateX(320%);
+        }
+      }
+
+      article {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-left: 4px solid var(--red);
+        padding: 18px 18px 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 0 rgba(28, 22, 18, 0.04);
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .kaynak {
+        color: var(--red);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        font-family: Palatino, "Iowan Old Style", "Times New Roman", serif;
+        font-size: 22px;
+        line-height: 1.25;
+        font-weight: 700;
+      }
+
+      h2 a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      h2 a:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .govde {
+        margin: 0 0 14px;
+        color: #3a322c;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .govde p {
+        margin: 0 0 0.9em;
+      }
+
+      .govde p:last-child {
+        margin-bottom: 0;
+      }
+
+      mark {
+        background: var(--red-soft);
+        color: var(--ink);
+        padding: 0 2px;
+      }
+
+      .oku {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--red);
+        text-decoration: none;
+      }
+
+      .oku:hover {
+        text-decoration: underline;
+      }
+
+      .empty {
+        border: 1px dashed var(--rule);
+        padding: 36px 20px;
+        text-align: center;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="kicker">
+          <span>Yerel tarama</span>
+          <span id="saat"></span>
+        </div>
+        <h1>Haberbot <span>emeklilik</span></h1>
+        <div class="toolbar">
+          <span class="chip" id="sayi">— haber</span>
+          <span class="chip soft" id="tarama">taranmadı</span>
+          <button type="button" id="yenile">Yeniden tara</button>
+        </div>
+      </header>
+
+      <p class="status" id="status">Sayfa açıldı, haberler çekiliyor…</p>
+      <div class="bar" id="bar"><i></i></div>
+      <main id="liste"></main>
+    </div>
+
+    <script>
+      const liste = document.getElementById("liste");
+      const statusEl = document.getElementById("status");
+      const sayi = document.getElementById("sayi");
+      const tarama = document.getElementById("tarama");
+      const bar = document.getElementById("bar");
+      const yenile = document.getElementById("yenile");
+      const saat = document.getElementById("saat");
+
+      saat.textContent = new Date().toLocaleDateString("tr-TR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      function kacis(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function tarihYaz(v) {
+        const d = new Date(v);
+        if (Number.isNaN(d.getTime())) return v;
+        return d.toLocaleString("tr-TR", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      const OLUMLU =
+        /emekli|SGK|EYT|intibak|prim gün|maaş bağla|aylık bağla|yaşlılık aylığı|BAĞ-?KUR|zam/gi;
+
+      function govdeHtml(govde) {
+        const ham = kacis(govde || "Gövde alınamadı.");
+        const isaretli = ham.replace(OLUMLU, (m) => `<mark>${m}</mark>`);
+        return isaretli
+          .split(/\n+/)
+          .filter(Boolean)
+          .map((p) => `<p>${p}</p>`)
+          .join("");
+      }
+
+      function ciz(data) {
+        const haberler = data.haberler ?? [];
+        sayi.textContent = `${haberler.length} haber`;
+        tarama.textContent = `${data.tarandi ?? 0} sayfa okundu`;
+
+        if (!haberler.length) {
+          liste.innerHTML =
+            '<div class="empty">Bu taramada filtreye uyan haber yok.</div>';
+          return;
+        }
+
+        liste.innerHTML = haberler
+          .map(
+            (h) => `
+          <article>
+            <div class="meta">
+              <span class="kaynak">${kacis(h.kaynak)}</span>
+              <span>${kacis(tarihYaz(h.tarih))}</span>
+              <span>${(h.govde || "").length} karakter</span>
+            </div>
+            <h2><a href="${kacis(h.link)}" target="_blank" rel="noopener">${kacis(h.baslik)}</a></h2>
+            <div class="govde">${govdeHtml(h.govde)}</div>
+            <a class="oku" href="${kacis(h.link)}" target="_blank" rel="noopener">Haberi aç →</a>
+          </article>`
+          )
+          .join("");
+      }
+
+      async function cek(zorla) {
+        yenile.disabled = true;
+        bar.classList.add("on");
+        statusEl.textContent = zorla
+          ? "Yeniden taranıyor, RSS ve haber gövdeleri okunuyor…"
+          : "Sözcü feed’leri ve haber sayfaları okunuyor…";
+
+        try {
+          const res = await fetch(`/api/haberler${zorla ? "?yenile=1" : ""}`);
+          if (!res.ok) throw new Error("Sunucu " + res.status);
+          const data = await res.json();
+          ciz(data);
+          statusEl.textContent = data.mesaj || "Tarama bitti.";
+        } catch (err) {
+          statusEl.textContent = "Hata: " + err.message;
+          liste.innerHTML =
+            '<div class="empty">Sonuç alınamadı. Terminaldeki hataya bak.</div>';
+        } finally {
+          yenile.disabled = false;
+          bar.classList.remove("on");
+        }
+      }
+
+      yenile.addEventListener("click", () => cek(true));
+      cek(false);
+    </script>
+  </body>
+</html>

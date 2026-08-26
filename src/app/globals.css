@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #2f2f2f;
+  --card: #ffffff;
+  --card-foreground: #2f2f2f;
+  --popover: #ffffff;
+  --popover-foreground: #2f2f2f;
+  --primary: #e96a6a;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: #2f2f2f;
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: #6b6b6b;
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: #2f2f2f;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: #e96a6a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+.rich-editor .tableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.rich-editor .tiptap table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  table-layout: fixed;
+  overflow: hidden;
+}
+.rich-editor .tiptap th,
+.rich-editor .tiptap td {
+  border: 1px solid #cbd5e1;
+  padding: 0.4rem 0.5rem;
+  min-width: 4rem;
+  vertical-align: top;
+}
+.rich-editor .tiptap th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+.rich-editor .tiptap .selectedCell {
+  background: #e2e8f0;
+}
+
+.haber-icerik h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 1.4rem 0 0.5rem;
+}
+.haber-icerik h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1.1rem 0 0.4rem;
+}
+.haber-icerik p {
+  margin: 0 0 0.9rem;
+  line-height: 1.7;
+}
+.haber-icerik ul {
+  list-style: disc;
+  padding-left: 1.4rem;
+  margin: 0 0 0.9rem;
+}
+.haber-icerik ol {
+  list-style: decimal;
+  padding-left: 1.4rem;
+  margin: 0 0 0.9rem;
+}
+.haber-icerik a {
+  color: #b42318;
+  text-decoration: underline;
+}
+.haber-icerik table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+.haber-icerik th,
+.haber-icerik td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+}
