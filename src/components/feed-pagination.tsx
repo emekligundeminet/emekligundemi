@@ -1,3 +1,4 @@
+import { feedPagePath } from "@/lib/feed-page";
 import Link from "next/link";
 
 export function FeedPagination({
@@ -14,7 +15,7 @@ export function FeedPagination({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
 
-  const href = (n: number) => (n <= 1 ? basePath : `${basePath}?sayfa=${n}`);
+  const href = (n: number) => feedPagePath(basePath, n);
   const prev = page > 1 ? page - 1 : null;
   const next = page < pages ? page + 1 : null;
 

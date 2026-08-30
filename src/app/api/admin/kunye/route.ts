@@ -4,6 +4,7 @@ import { forbidIfCannotEditSettings, requireAdminApi } from "@/lib/admin-auth";
 import { KUNYE_CACHE_TAG, parseKunyeVeri } from "@/lib/kunye";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { KUNYE_FIELDS } from "@/types/kunye";
+import { KURUMSAL_YASAL_SLUGS, yasalPath } from "@/types/yasal";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export async function PATCH(request: Request) {
 
   revalidateTag(KUNYE_CACHE_TAG, "max");
   revalidatePath("/kunye");
+  for (const slug of KURUMSAL_YASAL_SLUGS) revalidatePath(yasalPath(slug));
 
   return NextResponse.json({
     veri: parseKunyeVeri(data.veri),

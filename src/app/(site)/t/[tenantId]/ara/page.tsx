@@ -9,7 +9,7 @@ import { IMG_SIZES } from "@/lib/image-sizes";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ tenantId: string }>;

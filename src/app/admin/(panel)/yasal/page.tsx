@@ -118,7 +118,10 @@ export default function AdminYasalPage() {
       <div>
         <h1 className="text-lg font-semibold text-slate-800 sm:text-xl">Yasal sayfalar</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Markdown gövde. Tablo için GFM sözdizimi. Kayıt /yasal/{"{slug}"} yolunu yeniler.
+          Markdown gövde. Tablo için GFM sözdizimi. Kurumsal sayfalar
+          /yayin-ilkeleri, /duzeltme, /iletisim, /reklam; diğerleri /yasal/[slug].
+          Tokenlar: {"{{email}}"}, {"{{yayin_sahibi}}"}, {"{{sorumlu_mudur}}"},{" "}
+          {"{{yonetim_yeri}}"} — künyeden dolar.
         </p>
       </div>
 

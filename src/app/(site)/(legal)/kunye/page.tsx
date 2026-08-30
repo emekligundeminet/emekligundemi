@@ -1,4 +1,4 @@
-import { SitePage } from "@/components/site-page";
+import { LegalPageShell } from "@/components/legal-page-shell";
 import { filledKunye, getKunye, kunyeValue } from "@/lib/kunye";
 import { jsonLdScript } from "@/lib/json-ld";
 import { SITE_NAME, SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
@@ -69,7 +69,29 @@ export default async function KunyePage() {
   const kanallar = [eposta, uets].filter(Boolean);
 
   return (
-    <SitePage title="Künye">
+    <LegalPageShell
+      title="Künye"
+      notice={
+        kanallar.length > 0
+          ? {
+              title: "Cevap ve Düzeltme (Tekzip) Başvurusu",
+              children: (
+                <>
+                  Yayınlarımıza ilişkin cevap ve düzeltme talepleriniz için{" "}
+                  {eposta ? (
+                    <a href={`mailto:${eposta}`} className="text-[var(--brand)] underline">
+                      {eposta}
+                    </a>
+                  ) : null}
+                  {eposta && uets ? " / " : null}
+                  {uets ? <span>UETS: {uets}</span> : null} adresimiz üzerinden
+                  başvurabilirsiniz.
+                </>
+              ),
+            }
+          : undefined
+      }
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(kunyeJsonLd(veri)) }}
@@ -104,23 +126,6 @@ export default async function KunyePage() {
       ) : (
         <p>Künye bilgileri henüz girilmedi.</p>
       )}
-
-      {kanallar.length > 0 ? (
-        <div className="border border-neutral-200 bg-neutral-50 px-4 py-4">
-          <p className="font-semibold text-neutral-900">Cevap ve Düzeltme (Tekzip) Başvurusu</p>
-          <p className="mt-2">
-            Yayınlarımıza ilişkin cevap ve düzeltme talepleriniz için{" "}
-            {eposta ? (
-              <a href={`mailto:${eposta}`} className="text-[var(--brand)] underline">
-                {eposta}
-              </a>
-            ) : null}
-            {eposta && uets ? " / " : null}
-            {uets ? <span>UETS: {uets}</span> : null}{" "}
-            adresimiz üzerinden başvurabilirsiniz.
-          </p>
-        </div>
-      ) : null}
-    </SitePage>
+    </LegalPageShell>
   );
 }

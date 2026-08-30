@@ -189,10 +189,20 @@
   font-weight: 700;
   color: #171717;
 }
+.yasal-prose strong {
+  font-weight: 700;
+  color: #171717;
+}
 .yasal-prose p,
 .yasal-prose ul,
 .yasal-prose ol {
   margin: 0.75rem 0;
+}
+.yasal-prose > :first-child {
+  margin-top: 0;
+}
+.yasal-prose > :last-child {
+  margin-bottom: 0;
 }
 .yasal-prose ul {
   list-style: disc;

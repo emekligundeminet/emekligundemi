@@ -6,7 +6,7 @@ import { articlePath, isGuide, isReservedBlogIndexSlug } from "@/lib/content-typ
 import { authorPath } from "@/lib/author-slug";
 import { getAuthors } from "@/lib/store";
 import { listYayindaYasal } from "@/lib/yasal";
-import { yasalPath } from "@/types/yasal";
+import { isKurumsalYasalSlug, yasalPath } from "@/types/yasal";
 
 export const revalidate = 300;
 
@@ -69,12 +69,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]);
 
-  const yasalEntries: MetadataRoute.Sitemap = yasal.map((row) => ({
-    url: absolutePath(site.origin, yasalPath(row.slug)),
-    lastModified: row.guncelleme_tarihi ? new Date(row.guncelleme_tarihi) : new Date(),
-    changeFrequency: "yearly",
-    priority: 0.3,
-  }));
+  const yasalEntries: MetadataRoute.Sitemap = yasal
+    .filter((row) => !isKurumsalYasalSlug(row.slug))
+    .map((row) => ({
+      url: absolutePath(site.origin, yasalPath(row.slug)),
+      lastModified: row.guncelleme_tarihi ? new Date(row.guncelleme_tarihi) : new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    }));
 
   const authorEntries: MetadataRoute.Sitemap = authors.map((author) => ({
     url: absolutePath(site.origin, authorPath(author.name)),

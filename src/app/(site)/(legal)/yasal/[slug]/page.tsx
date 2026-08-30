@@ -1,9 +1,10 @@
-import { SitePage } from "@/components/site-page";
+import { LegalPageShell } from "@/components/legal-page-shell";
 import { YasalMarkdown } from "@/components/yasal-markdown";
-import { formatYasalTarih, getYasalSayfa } from "@/lib/yasal";
+import { getKunye } from "@/lib/kunye";
+import { applyYasalTokens, formatYasalTarih, getYasalSayfa } from "@/lib/yasal";
 import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
-import { yasalPath } from "@/types/yasal";
-import { notFound } from "next/navigation";
+import { isKurumsalYasalSlug, yasalPath } from "@/types/yasal";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -12,6 +13,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  if (isKurumsalYasalSlug(slug)) permanentRedirect(yasalPath(slug));
   const page = await getYasalSayfa(slug);
   if (!page) return { robots: { index: false, follow: true } };
   const path = yasalPath(page.slug);
@@ -31,17 +33,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function YasalSayfaPage({ params }: Props) {
   const { slug } = await params;
-  const page = await getYasalSayfa(slug);
+  if (isKurumsalYasalSlug(slug)) permanentRedirect(yasalPath(slug));
+  const [page, kunye] = await Promise.all([getYasalSayfa(slug), getKunye()]);
   if (!page) notFound();
 
   return (
-    <SitePage title={page.baslik}>
-      <YasalMarkdown markdown={page.icerik_md} />
-      {page.guncelleme_tarihi ? (
-        <p className="pt-2 text-sm text-neutral-500">
-          Son güncelleme: {formatYasalTarih(page.guncelleme_tarihi)}
-        </p>
-      ) : null}
-    </SitePage>
+    <LegalPageShell
+      title={page.baslik}
+      updatedAt={page.guncelleme_tarihi ? formatYasalTarih(page.guncelleme_tarihi) : undefined}
+    >
+      <div className="border-y border-neutral-200 py-4">
+        <YasalMarkdown markdown={applyYasalTokens(page.icerik_md, kunye)} />
+      </div>
+    </LegalPageShell>
   );
 }

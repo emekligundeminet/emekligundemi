@@ -1,7 +1,9 @@
 import "server-only";
 
 import { unstable_cache } from "next/cache";
+import { kunyeValue } from "@/lib/kunye";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
+import type { KunyeKey, KunyeVeri } from "@/types/kunye";
 import type { YasalSayfa } from "@/types/yasal";
 
 export const YASAL_CACHE_TAG = "yasal-sayfalar";
@@ -68,4 +70,26 @@ export function formatYasalTarih(isoDate: string) {
     month: "long",
     year: "numeric",
   }).format(d);
+}
+
+const YASAL_TOKEN_TO_KUNYE: Record<string, KunyeKey> = {
+  email: "eposta",
+  yayin_sahibi: "yayin_sahibi",
+  sorumlu_mudur: "sorumlu_mudur",
+  yonetim_yeri: "yonetim_yeri",
+};
+
+/** {{email}} vb. — değer yoksa token olduğu gibi kalır. */
+export function applyYasalTokens(markdown: string, kunye: KunyeVeri): string {
+  return markdown.replace(
+    /\{\{(email|yayin_sahibi|sorumlu_mudur|yonetim_yeri)\}\}/g,
+    (full, name: string) => {
+      const key = YASAL_TOKEN_TO_KUNYE[name];
+      if (!key) return full;
+      const value = kunyeValue(kunye, key);
+      if (!value) return full;
+      if (name === "email") return `[${value}](mailto:${value})`;
+      return value;
+    }
+  );
 }

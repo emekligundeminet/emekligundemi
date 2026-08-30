@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { hostnameFromHostHeader, lookupTenantByHostname } from "@/lib/tenant-lookup";
+import { sayfaQueryRedirectPath } from "@/lib/feed-page";
 import { tenantCacheRewritePath } from "@/lib/tenant-rewrite";
 
 function isAdminLogin(pathname: string) {
@@ -42,6 +43,17 @@ export async function middleware(request: NextRequest) {
   if (wwwRedirect) return wwwRedirect;
 
   const pathname = request.nextUrl.pathname;
+  const sayfaDest = sayfaQueryRedirectPath(
+    pathname,
+    request.nextUrl.searchParams.get("sayfa")
+  );
+  if (sayfaDest) {
+    const dest = request.nextUrl.clone();
+    dest.pathname = sayfaDest;
+    dest.searchParams.delete("sayfa");
+    return NextResponse.redirect(dest, 308);
+  }
+
   const hostTenant = await lookupTenantByHostname(
     hostnameFromHostHeader(
       request.headers.get("x-forwarded-host") ?? request.headers.get("host")
