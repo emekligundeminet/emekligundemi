@@ -508,7 +508,7 @@ export async function listEvergreenTargets(
   const supabase = createSupabaseAdminClient();
   let query = supabase
     .from("articles")
-    .select("id,title,slug,type,category_id,categories(name)")
+    .select("id,title,slug,type,category_id,categories(name,slug)")
     .eq("tenant_id", tenantId)
     .eq("evergreen", true)
     .eq("status", "published")
