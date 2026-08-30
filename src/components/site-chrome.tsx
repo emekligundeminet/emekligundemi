@@ -2,7 +2,6 @@ import { CookieBanner } from "@/components/cookie-banner";
 import { ConsentScripts } from "@/components/consent-scripts";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { WhatsAppChannelRail } from "@/components/whatsapp-channel-rail";
 import { cachedCategories, cachedSiteMeta } from "@/lib/cached-public";
 import { BRAND_FALLBACK, SITE_NAME } from "@/lib/site";
 
@@ -34,7 +33,6 @@ export async function SiteChrome({
       <div className="flex-1">{children}</div>
       <SiteFooter categories={categories} siteName={siteName} social={site?.social} />
       <CookieBanner />
-      <WhatsAppChannelRail href={site?.social.whatsapp} />
       <ConsentScripts />
     </div>
   );

@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: staticDocumentTitle(title) },
     description: `${year} yılında yayınlanan emeklilik haberleri.`,
+    robots: { index: false, follow: true },
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title, url: site ? `${site.origin}${path}` : path },
   };

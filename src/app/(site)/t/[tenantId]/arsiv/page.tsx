@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: staticDocumentTitle("Haber arşivi") },
     description: "Emekliler.org haber arşivi — yıl ve aya göre.",
+    robots: { index: false, follow: true },
     alternates: { canonical: site ? `${site.origin}/arsiv` : "/arsiv" },
     openGraph: { title: "Haber arşivi", url: site ? `${site.origin}/arsiv` : "/arsiv" },
   };

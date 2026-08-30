@@ -1,3 +1,5 @@
+import { EXTERNAL_NOFOLLOW } from "@/components/site-social";
+
 function googleSourceUrl(host?: string) {
   const q = host?.replace(/^www\./, "") || "";
   return q
@@ -39,7 +41,7 @@ export function GoogleFollowBar({
     <a
       href={googleSourceUrl(sourceHost)}
       target="_blank"
-      rel="noopener noreferrer"
+      rel={EXTERNAL_NOFOLLOW}
       className={
         compact
           ? "inline-flex max-w-full shrink-0 items-center gap-1.5 rounded border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-800 hover:border-black"

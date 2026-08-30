@@ -1,5 +1,6 @@
 "use client";
 
+import { EXTERNAL_NOFOLLOW } from "@/components/site-social";
 import { useState } from "react";
 
 const SIZES = ["sm", "md", "lg"] as const;
@@ -34,7 +35,7 @@ export function ArticleToolbar({ title, url }: Props) {
         <a
           href={shareFb(url)}
           target="_blank"
-          rel="noopener noreferrer"
+          rel={EXTERNAL_NOFOLLOW}
           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 hover:border-neutral-900 hover:text-black"
           aria-label="Facebook'ta paylaş"
         >
@@ -45,7 +46,7 @@ export function ArticleToolbar({ title, url }: Props) {
         <a
           href={shareWa(url, title)}
           target="_blank"
-          rel="noopener noreferrer"
+          rel={EXTERNAL_NOFOLLOW}
           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 hover:border-neutral-900 hover:text-black"
           aria-label="WhatsApp'ta paylaş"
         >

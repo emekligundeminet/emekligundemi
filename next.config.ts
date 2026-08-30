@@ -60,6 +60,16 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/kvkk-basvuru-formu",
+        destination: "/yasal/kvkk-basvuru-formu",
+        permanent: true,
+      },
+      {
+        source: "/hakkimizda",
+        destination: "/",
+        permanent: true,
+      },
+      {
         source:
           "/:category((?!kategori|admin|api|blog|haber|arac|araclar|yazar|ara|arsiv|yasal|fonts|images|t)[^/]+)/:slug([^/.]+)",
         destination: "/:slug",

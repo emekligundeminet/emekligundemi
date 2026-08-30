@@ -112,6 +112,15 @@ export function categoryMetaTitle(kat: { name: string; meta_title?: string | nul
   return stripBrandTitle(custom || `${kat.name} Haberleri`);
 }
 
+/** Kategori H1: gündem/emekli-yaşam olduğu gibi; ikramiye özel; diğerleri + Haberleri. */
+export function categoryPageHeading(slug: string, name: string) {
+  if (slug === "ikramiye-ve-odemeler") return "Emekli İkramiye ve Ödemeler";
+  if (slug === "gundem" || slug === "emekli-yasam") return name;
+  const trimmed = name.trim();
+  if (trimmed.toLocaleLowerCase("tr").endsWith("haberleri")) return trimmed;
+  return `${trimmed} Haberleri`;
+}
+
 export function categoryMetaDescription(kat: {
   name: string;
   meta_description?: string | null;

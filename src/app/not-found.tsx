@@ -1,3 +1,6 @@
+import { NotFoundBody } from "@/components/not-found-body";
+import { SiteChrome } from "@/components/site-chrome";
+import { getTenant } from "@/lib/tenant";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -5,10 +8,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function NotFound() {
-  return (
-    <div className="flex min-h-screen items-center justify-center text-slate-600">
-      Sayfa bulunamadı.
-    </div>
-  );
+export default async function RootNotFound() {
+  const tenant = await getTenant();
+  const body = <NotFoundBody />;
+  if (!tenant) return body;
+  return <SiteChrome tenantId={tenant.tenant_id}>{body}</SiteChrome>;
 }

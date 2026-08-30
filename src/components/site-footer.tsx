@@ -24,7 +24,6 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 
 /** Kurumsal / içerik / yasal — her href footer’da bir kez. */
 const KURUMSAL = [
-  { href: "/hakkimizda", label: "Hakkımızda" },
   { href: "/kunye", label: "Künye" },
   { href: "/yayin-ilkeleri", label: "Yayın İlkeleri" },
   { href: "/duzeltme", label: "Düzeltme" },
@@ -45,7 +44,8 @@ const ICERIK = [
 const YASAL = [
   { href: "/yasal/gizlilik", label: "Gizlilik" },
   { href: "/yasal/cerez-politikasi", label: "Çerez Politikası" },
-  { href: "/yasal/kvkk-saklama-imha", label: "KVKK" },
+  { href: "/yasal/kvkk-saklama-imha", label: "Saklama ve İmha" },
+  { href: "/yasal/kvkk-basvuru-formu", label: "KVKK Başvuru" },
 ] as const;
 
 export function SiteFooter({

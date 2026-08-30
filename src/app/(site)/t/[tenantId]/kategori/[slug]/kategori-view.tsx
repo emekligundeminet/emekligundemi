@@ -4,6 +4,7 @@ import {
   TITLE_SUFFIX,
   categoryMetaDescription,
   categoryMetaTitle,
+  categoryPageHeading,
   staticDocumentTitle,
   toArticleCard,
 } from "@/lib/site";
@@ -71,8 +72,6 @@ export async function KategoriView({ tenantId, slug, page }: Args) {
   const { slider, side, rest } = useHero
     ? splitCategoryHero(data.articles)
     : { slider: [] as Article[], side: [] as Article[], rest: data.articles };
-  const description = `${data.kat.name} kategorisindeki güncel haberler.`;
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       {site ? (
@@ -89,9 +88,8 @@ export async function KategoriView({ tenantId, slug, page }: Args) {
         />
       ) : null}
       <CategoryFeed
-        name={data.kat.name}
+        name={categoryPageHeading(data.kat.slug, data.kat.name)}
         slug={data.kat.slug}
-        description={description}
         featured={[]}
         initialMore={rest.map(toArticleCard)}
         heroSlides={slider}

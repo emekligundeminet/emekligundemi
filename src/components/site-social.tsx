@@ -9,6 +9,8 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+export const EXTERNAL_NOFOLLOW = "noopener noreferrer nofollow";
+
 export type SiteSocial = {
   twitter?: string;
   facebook?: string;
@@ -62,7 +64,7 @@ export function SiteSocialMenu({ social }: { social?: SiteSocial }) {
               <a
                 href={item.href}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel={EXTERNAL_NOFOLLOW}
                 aria-label={item.label}
                 className="text-neutral-800 hover:text-[var(--brand)]"
               >
@@ -103,7 +105,7 @@ export function SiteSocialLinks({
             href={item.href}
             aria-label={item.label}
             target="_blank"
-            rel="noopener noreferrer"
+            rel={EXTERNAL_NOFOLLOW}
             className={cn(
               "transition-opacity hover:opacity-70",
               variant === "dark" ? "text-white" : "text-neutral-800 hover:text-[var(--brand)]"

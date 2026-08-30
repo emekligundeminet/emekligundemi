@@ -78,15 +78,13 @@ export function CategoryFeed({
   return (
     <div>
       <header className="mb-1">
-        <div className="mt-1 border-b-2 border-[var(--brand)] pb-4">
+        <div className="mt-1 flex items-center gap-3 pb-4">
           <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{name}</h1>
-          {description ? (
-            <p className="mt-2 max-w-2xl text-base leading-relaxed text-neutral-600">{description}</p>
-          ) : null}
-          {total > 0 ? (
-            <p className="mt-1 text-sm text-neutral-500">{total} haber</p>
-          ) : null}
+          <span className="h-[2px] w-10 shrink-0 bg-[var(--brand)]" aria-hidden />
         </div>
+        {slug === "blog" && description ? (
+          <p className="max-w-2xl text-base leading-relaxed text-neutral-600">{description}</p>
+        ) : null}
       </header>
 
       {empty ? (

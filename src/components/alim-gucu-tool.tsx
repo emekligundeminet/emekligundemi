@@ -143,7 +143,7 @@ export function AlimGucuTool({ params }: { params: HesapParamMap }) {
               className="inline-flex h-10 items-center bg-[#25D366] px-3 text-sm font-bold text-white"
               href={`https://wa.me/?text=${encodeURIComponent(paylasMetin)}`}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
             >
               WhatsApp
             </a>
@@ -151,7 +151,7 @@ export function AlimGucuTool({ params }: { params: HesapParamMap }) {
               className="inline-flex h-10 items-center bg-neutral-900 px-3 text-sm font-bold text-white"
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(paylasMetin)}`}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
             >
               X
             </a>

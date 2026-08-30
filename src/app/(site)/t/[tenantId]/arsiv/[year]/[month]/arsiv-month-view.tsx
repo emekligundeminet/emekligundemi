@@ -30,6 +30,7 @@ export async function arsivMonthMetadata({ tenantId, year: y, month: m }: Args):
   return {
     title: { absolute: staticDocumentTitle(`${title} haberleri`) },
     description: `${title} tarihinde yayınlanan emeklilik haberleri.`,
+    robots: { index: false, follow: true },
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title: `${title} haberleri`, url: site ? `${site.origin}${path}` : path },
   };

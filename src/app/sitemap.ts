@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { absolutePath, getSiteMeta } from "@/lib/site-meta";
-import { cachedArchiveYears, cachedSitemapData } from "@/lib/cached-public";
-import { archiveMonthPath, archiveYearPath } from "@/lib/archive";
+import { cachedSitemapData } from "@/lib/cached-public";
 import { articlePath, isGuide, isReservedBlogIndexSlug } from "@/lib/content-type";
 import { authorPath } from "@/lib/author-slug";
 import { getAuthors } from "@/lib/store";
@@ -22,20 +21,17 @@ const STATIC_PATHS = [
   "/reklam",
   "/kvkk",
   "/aydinlatma-metni",
-  "/hakkimizda",
   "/yayin-ilkeleri",
   "/duzeltme",
-  "/arsiv",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = await getSiteMeta();
   if (!site) return [];
-  const [{ articles, categories }, authors, yasal, archiveYears] = await Promise.all([
+  const [{ articles, categories }, authors, yasal] = await Promise.all([
     cachedSitemapData(site.tenantId),
     getAuthors(site.tenantId),
     listYayindaYasal(),
-    cachedArchiveYears(site.tenantId),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
@@ -53,21 +49,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     }));
-
-  const archiveEntries: MetadataRoute.Sitemap = archiveYears.flatMap((block) => [
-    {
-      url: absolutePath(site.origin, archiveYearPath(block.year)),
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.4,
-    },
-    ...block.months.map((m) => ({
-      url: absolutePath(site.origin, archiveMonthPath(m.year, m.month)),
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.45,
-    })),
-  ]);
 
   const yasalEntries: MetadataRoute.Sitemap = yasal
     .filter((row) => !isKurumsalYasalSlug(row.slug))
@@ -98,7 +79,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...yasalEntries,
-    ...archiveEntries,
     ...categoryEntries,
     ...authorEntries,
     ...articleEntries,
