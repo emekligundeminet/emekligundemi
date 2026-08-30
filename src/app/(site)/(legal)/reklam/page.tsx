@@ -1,10 +1,10 @@
 import { SitePage } from "@/components/site-page";
 import { ADS_EMAIL } from "@/lib/publisher";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reklam",
+  title: { absolute: staticDocumentTitle("Reklam") },
   description: "Reklam ve iş birliği, editoryal bağımsızlık.",
   alternates: { canonical: `${SITE_ORIGIN}/reklam` },
   openGraph: { url: `${SITE_ORIGIN}/reklam`, title: "Reklam" },

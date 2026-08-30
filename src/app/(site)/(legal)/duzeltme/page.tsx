@@ -1,10 +1,10 @@
 import { SitePage } from "@/components/site-page";
 import { CONTACT_EMAIL, CORRECTION_SLA } from "@/lib/publisher";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Düzeltme ve Yanıt Hakkı",
+  title: { absolute: staticDocumentTitle("Düzeltme ve Yanıt Hakkı") },
   description: "Haber hatası ve düzeltme talebi nasıl iletilir.",
   alternates: { canonical: `${SITE_ORIGIN}/duzeltme` },
   openGraph: { url: `${SITE_ORIGIN}/duzeltme`, title: "Düzeltme ve Yanıt Hakkı" },

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { archiveMonthPath, archiveYearPath, monthTitle } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
-import { HOME_TITLE } from "@/lib/site";
+import { HOME_TITLE, staticDocumentTitle } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tenantId } = await params;
   const site = await cachedSiteMeta(tenantId);
   return {
-    title: "Haber arşivi",
+    title: { absolute: staticDocumentTitle("Haber arşivi") },
     description: "Emekliler.org haber arşivi — yıl ve aya göre.",
     alternates: { canonical: site ? `${site.origin}/arsiv` : "/arsiv" },
     openGraph: { title: "Haber arşivi", url: site ? `${site.origin}/arsiv` : "/arsiv" },

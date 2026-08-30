@@ -1,10 +1,10 @@
 import { SitePage } from "@/components/site-page";
 import { CONTACT_EMAIL, HOSTING_NOTE, PUBLISHER_NAME } from "@/lib/publisher";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Aydınlatma Metni",
+  title: { absolute: staticDocumentTitle("Aydınlatma Metni") },
   description: "KVKK madde 10 aydınlatma metni.",
   alternates: { canonical: `${SITE_ORIGIN}/aydinlatma-metni` },
   openGraph: { url: `${SITE_ORIGIN}/aydinlatma-metni`, title: "Aydınlatma Metni" },

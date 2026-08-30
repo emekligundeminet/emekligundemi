@@ -1,7 +1,7 @@
 import { SitePage } from "@/components/site-page";
 import { filledKunye, getKunye, kunyeValue } from "@/lib/kunye";
 import { jsonLdScript } from "@/lib/json-ld";
-import { SITE_NAME, SITE_ORIGIN } from "@/lib/site";
+import { SITE_NAME, SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { KunyeVeri } from "@/types/kunye";
 import type { Metadata } from "next";
 
@@ -9,12 +9,12 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: { absolute: "Künye — Emekliler" },
+    title: { absolute: staticDocumentTitle("Künye") },
     description: "Emekliler internet haber sitesinin yayın künyesi.",
     robots: { index: true, follow: true },
     alternates: { canonical: `${SITE_ORIGIN}/kunye` },
     openGraph: {
-      title: "Künye — Emekliler",
+      title: "Künye",
       description: "Emekliler internet haber sitesinin yayın künyesi.",
       url: `${SITE_ORIGIN}/kunye`,
     },

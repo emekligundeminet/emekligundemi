@@ -7,7 +7,7 @@ import {
   parseArchiveYear,
 } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
-import { HOME_TITLE } from "@/lib/site";
+import { HOME_TITLE, staticDocumentTitle } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = archiveYearPath(year);
   const title = `${year} haber arşivi`;
   return {
-    title,
+    title: { absolute: staticDocumentTitle(title) },
     description: `${year} yılında yayınlanan emeklilik haberleri.`,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title, url: site ? `${site.origin}${path}` : path },

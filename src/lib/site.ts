@@ -7,6 +7,17 @@ export const SITE_NAME = "Emekliler";
 /** Sekme / <title> soneki. Haber detayında kullanılmaz. */
 export const TITLE_SUFFIX = "Emekliler.org";
 export const HOME_TITLE = "Emekli Haberleri";
+
+/** Editör/panel soneki varsa düşür; şablon bir kez `| Emekliler.org` ekler. */
+export function stripBrandTitle(raw: string) {
+  return raw.replace(/\s*[|—–-]\s*Emekliler(?:\.org)?\s*$/i, "").trim();
+}
+
+/** Statik sayfa / kategori sekme başlığı. Haber detayında kullanma. */
+export function staticDocumentTitle(pageName: string) {
+  const clean = stripBrandTitle(pageName);
+  return clean ? `${clean} | ${TITLE_SUFFIX}` : TITLE_SUFFIX;
+}
 export const SITE_TAGLINE =
   "Emekliler için güncel emekli maaşı, zam, SGK ve promosyon haberleri.";
 /** primary_color yokken --brand. Tek yedek; UI'da başka marka hex yok. */
@@ -95,21 +106,18 @@ export function excerptFromHtml(html: string, max = 160) {
   return `${text.slice(0, max).replace(/\s+\S*$/, "")}…`;
 }
 
-/** Sayfa başlığı (şablon `| Emekliler.org` ekler). */
-export function categoryMetaTitle(
-  kat: { name: string; meta_title?: string | null },
-  _siteName?: string
-) {
+/** Sayfa adı; `| Emekliler` soneki varsa temizlenir. */
+export function categoryMetaTitle(kat: { name: string; meta_title?: string | null }) {
   const custom = kat.meta_title?.trim();
-  return custom || `${kat.name} Haberleri`;
+  return stripBrandTitle(custom || `${kat.name} Haberleri`);
 }
 
-export function categoryMetaDescription(
-  kat: { name: string; meta_description?: string | null },
-  siteName: string
-) {
+export function categoryMetaDescription(kat: {
+  name: string;
+  meta_description?: string | null;
+}) {
   const custom = kat.meta_description?.trim();
-  return custom || `${kat.name} haberleri — ${siteName}`;
+  return custom || `${kat.name} haberleri.`;
 }
 
 export function categoryName(

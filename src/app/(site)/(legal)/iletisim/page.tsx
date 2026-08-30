@@ -1,10 +1,10 @@
 import { SitePage } from "@/components/site-page";
 import { ADS_EMAIL, CONTACT_EMAIL, PUBLISHER_NAME } from "@/lib/publisher";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "İletişim",
+  title: { absolute: staticDocumentTitle("İletişim") },
   description: "Emekliler.org iletişim ve hata bildirimi.",
   alternates: { canonical: `${SITE_ORIGIN}/iletisim` },
   openGraph: { url: `${SITE_ORIGIN}/iletisim`, title: "İletişim" },

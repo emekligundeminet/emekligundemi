@@ -1,7 +1,7 @@
 import { SitePage } from "@/components/site-page";
 import { YasalMarkdown } from "@/components/yasal-markdown";
 import { formatYasalTarih, getYasalSayfa } from "@/lib/yasal";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import { yasalPath } from "@/types/yasal";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -15,9 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = await getYasalSayfa(slug);
   if (!page) return { robots: { index: false, follow: true } };
   const path = yasalPath(page.slug);
-  const description = `${page.baslik} — Emekliler.org`;
+  const description = page.baslik;
   return {
-    title: page.baslik,
+    title: { absolute: staticDocumentTitle(page.baslik) },
     description,
     robots: { index: true, follow: true },
     alternates: { canonical: `${SITE_ORIGIN}${path}` },

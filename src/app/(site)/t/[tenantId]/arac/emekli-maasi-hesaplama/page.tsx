@@ -31,7 +31,7 @@ export async function generateMetadata({
   const canonical = origin ? absolutePath(origin, PENSION_TOOL_PATH) : PENSION_TOOL_PATH;
   const title = "Emekli Maaşı Hesaplama 2026";
   return {
-    title,
+    title: { absolute: `${title} | Emekliler.org` },
     description: DESC,
     alternates: { canonical },
     openGraph: {

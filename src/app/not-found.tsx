@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sayfa bulunamadı",
+  title: { absolute: "Sayfa bulunamadı | Emekliler.org" },
   robots: { index: false, follow: true },
 };
 

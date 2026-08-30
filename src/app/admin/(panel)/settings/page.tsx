@@ -92,7 +92,10 @@ export default function AdminSettingsPage() {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-700">Site adı</label>
-        <Input value={form.site_name ?? ""} onChange={(e) => set("site_name", e.target.value)} />
+        <Input value="Emekliler" disabled className="bg-slate-100" />
+        <p className="text-xs text-slate-500">
+          Sekme başlığı sabit: sayfa adı | Emekliler.org. Haber detayında eklenmez.
+        </p>
       </div>
 
       <div className="space-y-1.5">

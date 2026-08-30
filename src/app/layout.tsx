@@ -6,10 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
-  title: {
-    default: `${HOME_TITLE} | ${TITLE_SUFFIX}`,
-    template: `%s | ${TITLE_SUFFIX}`,
-  },
+  title: `${HOME_TITLE} | ${TITLE_SUFFIX}`,
   description: SITE_TAGLINE,
   icons: {
     icon: [{ url: BRAND_LOGO.favicon, type: "image/svg+xml" }],

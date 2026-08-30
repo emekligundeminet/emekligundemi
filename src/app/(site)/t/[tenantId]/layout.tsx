@@ -1,6 +1,6 @@
 import { SiteChrome } from "@/components/site-chrome";
 import { cachedSiteMeta, cachedTenant } from "@/lib/cached-public";
-import { BRAND_LOGO, HOME_TITLE, SITE_TAGLINE, TITLE_SUFFIX } from "@/lib/site";
+import { BRAND_LOGO } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -21,8 +21,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tenantId } = await params;
   const site = await cachedSiteMeta(tenantId);
   return {
-    title: { default: HOME_TITLE, template: `%s | ${TITLE_SUFFIX}` },
-    description: site?.description ?? SITE_TAGLINE,
     metadataBase: site ? new URL(site.origin) : undefined,
     icons: {
       icon: [{ url: BRAND_LOGO.favicon, type: "image/svg+xml" }],

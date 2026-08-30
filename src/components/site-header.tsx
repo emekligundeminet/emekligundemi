@@ -9,6 +9,7 @@ import { SiteBrandLogo } from "@/components/site-brand-logo";
 import { SiteSearchForm } from "@/components/site-search-form";
 import { SiteSocialMenu, type SiteSocial } from "@/components/site-social";
 import { isReservedBlogIndexSlug } from "@/lib/content-type";
+import { HOME_TITLE } from "@/lib/site";
 import type { Category } from "@/types/category";
 
 type SiteHeaderProps = {
@@ -23,7 +24,7 @@ export function SiteHeader({ categories, siteName, social }: SiteHeaderProps) {
   const navCats = categories.filter((c) => !isReservedBlogIndexSlug(c.slug));
 
   const links = [
-    { href: "/", label: "Son Dakika" },
+    { href: "/", label: HOME_TITLE },
     ...navCats.map((c) => ({ href: `/kategori/${c.slug}`, label: c.name })),
     { href: "/blog", label: "Blog" },
   ];

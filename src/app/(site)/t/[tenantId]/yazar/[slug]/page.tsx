@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { cachedSiteMeta } from "@/lib/cached-public";
 import { getPublishedArticles } from "@/lib/data/articles";
 import { getAuthorBySlug } from "@/lib/store";
-import { formatNewsDate, toArticleCard } from "@/lib/site";
+import { formatNewsDate, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { IMG_SIZES } from "@/lib/image-sizes";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!author) return {};
   const path = authorPath(author.name);
   return {
-    title: author.name,
-    description: author.bio?.trim() || `${author.name} — ${site?.name ?? "Emekliler"} yazarı.`,
+    title: { absolute: staticDocumentTitle(author.name) },
+    description: author.bio?.trim() || `${author.name} yazıları.`,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: {
       type: "profile",

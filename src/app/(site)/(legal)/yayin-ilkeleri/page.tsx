@@ -1,9 +1,9 @@
 import { SitePage } from "@/components/site-page";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Yayın İlkeleri",
+  title: { absolute: staticDocumentTitle("Yayın İlkeleri") },
   description: "Emekliler.org haber ve rehber içeriklerini nasıl üretir.",
   alternates: { canonical: `${SITE_ORIGIN}/yayin-ilkeleri` },
   openGraph: { url: `${SITE_ORIGIN}/yayin-ilkeleri`, title: "Yayın İlkeleri" },

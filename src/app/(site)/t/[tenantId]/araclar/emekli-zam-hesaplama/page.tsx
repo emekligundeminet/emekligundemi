@@ -29,7 +29,7 @@ export async function generateMetadata({
   const site = await cachedSiteMeta(tenantId);
   const origin = site?.origin;
   return {
-    title: TITLE,
+    title: { absolute: `${TITLE} | Emekliler.org` },
     description: DESC,
     alternates: { canonical: origin ? absolutePath(origin, PATH) : PATH },
   };

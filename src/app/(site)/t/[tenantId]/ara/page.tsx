@@ -4,7 +4,7 @@ import { CoverMedia } from "@/components/cover-media";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { cachedSiteMeta } from "@/lib/cached-public";
 import { getPublishedArticles } from "@/lib/data/articles";
-import { formatNewsDate, toArticleCard } from "@/lib/site";
+import { formatNewsDate, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { IMG_SIZES } from "@/lib/image-sizes";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -23,7 +23,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const query = q?.trim() ?? "";
   const title = query ? `Arama: ${query}` : "Haber ara";
   return {
-    title,
+    title: { absolute: staticDocumentTitle(title) },
     robots: { index: false, follow: true },
     alternates: { canonical: site ? `${site.origin}/ara` : "/ara" },
   };

@@ -1,11 +1,11 @@
 import { SitePage } from "@/components/site-page";
 import { getSiteMeta } from "@/lib/site-meta";
 import { CONTACT_EMAIL, PUBLISHER_NAME } from "@/lib/publisher";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Hakkımızda",
+  title: { absolute: staticDocumentTitle("Hakkımızda") },
   description: "Emekliler.org ne işe yarar, kim yayınlar.",
   alternates: { canonical: `${SITE_ORIGIN}/hakkimizda` },
   openGraph: { url: `${SITE_ORIGIN}/hakkimizda`, title: "Hakkımızda" },

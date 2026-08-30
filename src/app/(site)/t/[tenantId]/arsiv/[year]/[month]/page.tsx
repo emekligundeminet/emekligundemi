@@ -12,7 +12,7 @@ import {
 } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
 import { getPublishedArticles } from "@/lib/data/articles";
-import { HOME_TITLE, toArticleCard } from "@/lib/site";
+import { HOME_TITLE, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = archiveMonthPath(year, month);
   const title = monthTitle(year, month);
   return {
-    title: `${title} haberleri`,
+    title: { absolute: staticDocumentTitle(`${title} haberleri`) },
     description: `${title} tarihinde yayınlanan emeklilik haberleri.`,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title: `${title} haberleri`, url: site ? `${site.origin}${path}` : path },

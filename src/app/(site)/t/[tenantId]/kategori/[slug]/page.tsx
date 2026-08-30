@@ -1,9 +1,10 @@
 import { CategoryFeed } from "@/components/category-feed";
 import {
   BRAND_LOGO,
-  SITE_NAME,
+  TITLE_SUFFIX,
   categoryMetaDescription,
   categoryMetaTitle,
+  staticDocumentTitle,
   toArticleCard,
 } from "@/lib/site";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
@@ -48,28 +49,28 @@ export async function generateMetadata({
     cachedCategoryPage(tenantId, slug, page),
   ]);
   if (!data) return {};
-  const siteName = site?.name ?? SITE_NAME;
   const empty = data.total === 0;
   const path = `/kategori/${data.kat.slug}`;
   const canonical = site
     ? `${site.origin}${path}${page > 1 ? `?sayfa=${page}` : ""}`
     : path;
-  const title = categoryMetaTitle(data.kat);
-  const description = categoryMetaDescription(data.kat, siteName);
+  const pageName = categoryMetaTitle(data.kat);
+  const title = staticDocumentTitle(pageName);
+  const description = categoryMetaDescription(data.kat);
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical },
     robots: empty || page > 1 ? { index: false, follow: true } : undefined,
     openGraph: {
       type: "website",
-      siteName,
-      title,
+      siteName: TITLE_SUFFIX,
+      title: pageName,
       description,
       url: canonical,
-      images: [{ url: BRAND_LOGO.onRed, alt: siteName }],
+      images: [{ url: BRAND_LOGO.onRed, alt: TITLE_SUFFIX }],
     },
-    twitter: { card: "summary", title, description },
+    twitter: { card: "summary", title: pageName, description },
   };
 }
 
@@ -95,9 +96,7 @@ export default async function KategoriPage({
   const { slider, side, rest } = useHero
     ? splitCategoryHero(data.articles)
     : { slider: [] as Article[], side: [] as Article[], rest: data.articles };
-  const description = site?.name
-    ? `${data.kat.name} kategorisindeki güncel haberler — ${site.name}.`
-    : `${data.kat.name} kategorisindeki güncel haberler.`;
+  const description = `${data.kat.name} kategorisindeki güncel haberler.`;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
