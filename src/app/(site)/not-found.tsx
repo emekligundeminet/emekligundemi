@@ -1,6 +1,4 @@
 import { NotFoundBody } from "@/components/not-found-body";
-import { SiteChrome } from "@/components/site-chrome";
-import { getTenant } from "@/lib/tenant";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,9 +6,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default async function SiteNotFound() {
-  const tenant = await getTenant();
-  const body = <NotFoundBody />;
-  if (!tenant) return body;
-  return <SiteChrome tenantId={tenant.tenant_id}>{body}</SiteChrome>;
+/** ISR sayfalar headers() göremez — chrome tenant/legal layout’tan gelir. */
+export default function SiteNotFound() {
+  return <NotFoundBody />;
 }
