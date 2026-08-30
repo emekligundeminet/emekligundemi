@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { TableKit } from "@tiptap/extension-table";
+import Image from "@tiptap/extension-image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,14 +14,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { EvergreenLinkPicker } from "@/components/evergreen-link-picker";
+import { uploadArticleImage } from "@/lib/upload-article-image";
+import { readNaturalSize } from "@/lib/read-natural-size";
+import { toast } from "sonner";
 import {
   Bold,
   Heading2,
   Heading3,
+  Heading4,
+  ImageIcon,
   Link2,
   Link2Off,
   List,
   ListOrdered,
+  Loader2,
   Table,
 } from "lucide-react";
 
@@ -30,6 +38,9 @@ type ArticleEditorProps = {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  variant?: "news" | "blog";
+  excludeArticleId?: string;
+  categoryId?: string;
 };
 
 function cx(...classes: (string | undefined)[]) {
@@ -42,16 +53,22 @@ export function ArticleEditor({
   placeholder = "İçeriği buraya yazın",
   className,
   minHeight = "320px",
+  variant = "news",
+  excludeArticleId,
+  categoryId,
 }: ArticleEditorProps) {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const [customUrl, setCustomUrl] = useState("");
-  const [linkNewTab, setLinkNewTab] = useState(false);
+  const [selectedText, setSelectedText] = useState("");
+  const [savedRange, setSavedRange] = useState<{ from: number; to: number } | null>(null);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageAlt, setImageAlt] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: { levels: [2, 3, 4] },
         blockquote: false,
         codeBlock: false,
         code: false,
@@ -62,6 +79,15 @@ export function ArticleEditor({
         },
       }),
       Placeholder.configure({ placeholder }),
+      Image.configure({
+        inline: false,
+        allowBase64: false,
+        HTMLAttributes: {
+          class: "rounded-md max-w-full h-auto",
+          loading: "lazy",
+          decoding: "async",
+        },
+      }),
       TableKit.configure({
         table: { resizable: false, renderWrapper: true },
       }),
@@ -71,7 +97,7 @@ export function ArticleEditor({
     editorProps: {
       attributes: {
         class:
-          "focus:outline-none min-h-[260px] text-slate-700 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_a]:text-red-600 [&_a]:underline",
+          "focus:outline-none min-h-[260px] text-slate-700 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_a]:text-red-600 [&_a]:underline [&_img]:my-3 [&_img]:rounded-md [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full",
       },
     },
   });
@@ -84,29 +110,93 @@ export function ArticleEditor({
 
   const openLinkDialog = useCallback(() => {
     if (!editor) return;
-    const href = editor.getAttributes("link").href as string | undefined;
-    setCustomUrl(href ?? "");
-    setLinkNewTab(editor.getAttributes("link").target === "_blank");
+    const { from, to } = editor.state.selection;
+    setSavedRange({ from, to });
+    setSelectedText(editor.state.doc.textBetween(from, to, " ").trim());
     setLinkDialogOpen(true);
   }, [editor]);
 
-  const insertCustomLink = useCallback(() => {
-    if (!editor) return;
-    const href = customUrl.trim();
-    if (!href) return;
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({
-        href,
-        target: linkNewTab ? "_blank" : "_self",
-        rel: linkNewTab ? "noopener noreferrer" : "",
-      })
-      .run();
-    setLinkDialogOpen(false);
-    setCustomUrl("");
-  }, [editor, customUrl, linkNewTab]);
+  const insertLinkAtCursor = useCallback(
+    (href: string, anchor: string) => {
+      const safeHref = href.trim();
+      const safeAnchor = anchor.trim();
+      if (!safeHref || !safeAnchor) return;
+      if (!editor) {
+        void navigator.clipboard
+          .writeText(`[${safeAnchor}](${safeHref})`)
+          .then(() => toast.success("Link panoya kopyalandı."))
+          .catch(() => toast.error("Link eklenemedi."));
+        return;
+      }
+      if (savedRange) {
+        editor.chain().focus().setTextSelection(savedRange).run();
+      }
+      const { from, to } = editor.state.selection;
+      const selected = editor.state.doc.textBetween(from, to, " ").trim();
+      const mark = { type: "link", attrs: { href: safeHref, target: "_self", rel: "" } };
+      const insertLinked = () =>
+        editor
+          .chain()
+          .focus()
+          .insertContent({ type: "text", text: safeAnchor, marks: [mark] })
+          .run();
+      const ok =
+        from !== to && selected === safeAnchor
+          ? editor.chain().focus().extendMarkRange("link").setLink(mark.attrs).run()
+          : from !== to
+            ? editor.chain().focus().deleteSelection().run() && insertLinked()
+            : insertLinked();
+      if (!ok) {
+        void navigator.clipboard
+          .writeText(`[${safeAnchor}](${safeHref})`)
+          .then(() => toast.success("Link panoya kopyalandı."))
+          .catch(() => toast.error("Link eklenemedi."));
+      }
+    },
+    [editor, savedRange]
+  );
+
+  const insertEditorImage = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file || !editor) return;
+      if (!file.type.startsWith("image/")) {
+        toast.error("Lütfen bir görsel seçin.");
+        return;
+      }
+      setImageUploading(true);
+      try {
+        const src = await uploadArticleImage(file);
+        let width: number | undefined;
+        let height: number | undefined;
+        try {
+          const size = await readNaturalSize(file);
+          width = size.width;
+          height = size.height;
+        } catch {
+          // Boyut yoksa img yine eklenir; public katman 16/9 fallback uygular.
+        }
+        editor
+          .chain()
+          .focus()
+          .setImage({
+            src,
+            alt: imageAlt.trim() || file.name,
+            ...(width && height ? { width, height } : {}),
+          })
+          .run();
+        setImageDialogOpen(false);
+        setImageAlt("");
+        toast.success("Görsel eklendi.");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Yükleme başarısız.");
+      } finally {
+        setImageUploading(false);
+      }
+    },
+    [editor, imageAlt]
+  );
 
   if (!editor) return null;
 
@@ -123,30 +213,85 @@ export function ArticleEditor({
       )}
     >
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-input bg-muted/40 px-2 py-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={active(editor.isActive("heading", { level: 2 }))}
-          title="Başlık 2"
-        >
-          <Heading2 className="size-4" />
-          H2
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={active(editor.isActive("heading", { level: 3 }))}
-          title="Başlık 3"
-        >
-          <Heading3 className="size-4" />
-          H3
-        </Button>
+        {variant === "news" ? (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+              className={active(editor.isActive("heading", { level: 3 }))}
+              title="İç başlık (H3)"
+            >
+              <Heading3 className="size-4" />
+              H3
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={active(editor.isActive("heading", { level: 2 }))}
+              title="Başlık 2"
+            >
+              <Heading2 className="size-4" />
+              H2
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+              className={active(editor.isActive("heading", { level: 4 }))}
+              title="Başlık 4"
+            >
+              <Heading4 className="size-4" />
+              H4
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={active(editor.isActive("heading", { level: 2 }))}
+              title="Başlık 2"
+            >
+              <Heading2 className="size-4" />
+              H2
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+              className={active(editor.isActive("heading", { level: 3 }))}
+              title="Başlık 3"
+            >
+              <Heading3 className="size-4" />
+              H3
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+              className={active(editor.isActive("heading", { level: 4 }))}
+              title="Başlık 4"
+            >
+              <Heading4 className="size-4" />
+              H4
+            </Button>
+          </>
+        )}
         <Button
           type="button"
           variant="outline"
@@ -212,6 +357,20 @@ export function ArticleEditor({
           variant="outline"
           size="sm"
           onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            setImageAlt("");
+            setImageDialogOpen(true);
+          }}
+          title="Görsel ekle"
+        >
+          <ImageIcon className="size-4" />
+          Görsel
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() =>
             editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
           }
@@ -261,29 +420,45 @@ export function ArticleEditor({
         <EditorContent editor={editor} />
       </div>
 
-      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+      <EvergreenLinkPicker
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        excludeId={excludeArticleId}
+        categoryId={categoryId}
+        selectedText={selectedText}
+        linkCount={(editor.getHTML().match(/<a\s/gi) ?? []).length}
+        onInsert={insertLinkAtCursor}
+      />
+
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Link ekle</DialogTitle>
+            <DialogTitle>Görsel ekle</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input
-              placeholder="https://… veya /haber/slug"
-              value={customUrl}
-              onChange={(e) => setCustomUrl(e.target.value)}
-            />
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                checked={linkNewTab}
-                onChange={(e) => setLinkNewTab(e.target.checked)}
-                className="rounded border-input"
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                Alt metin (SEO)
+              </label>
+              <Input
+                placeholder="Görseli kısaca anlatın"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
               />
-              <span className="text-sm">Yeni sekmede aç</span>
-            </label>
-            <Button onClick={insertCustomLink} className="w-full" disabled={!customUrl.trim()}>
-              Linki uygula
-            </Button>
+            </div>
+            <Input
+              type="file"
+              accept="image/*"
+              disabled={imageUploading}
+              onChange={insertEditorImage}
+              className="cursor-pointer text-xs file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1"
+            />
+            {imageUploading ? (
+              <p className="flex items-center gap-2 text-sm text-slate-500">
+                <Loader2 className="size-4 animate-spin" />
+                Yükleniyor…
+              </p>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>

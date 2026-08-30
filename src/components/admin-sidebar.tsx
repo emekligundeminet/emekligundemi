@@ -4,22 +4,54 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FolderTree, FileText, Download, Menu, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderTree,
+  FileText,
+  Download,
+  Menu,
+  X,
+  UserRound,
+  Settings,
+  Newspaper,
+  Calculator,
+  Stamp,
+  Scale,
+} from "lucide-react";
+import { AdminLogoutButton } from "@/components/admin-logout-button";
+import type { TenantRole } from "@/types/tenant-role";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/cek", label: "Haber Çek", icon: Download },
   { href: "/admin/categories", label: "Kategoriler", icon: FolderTree },
+  { href: "/admin/authors", label: "Yazarlar", icon: UserRound },
+  { href: "/admin/sources", label: "Kaynaklar", icon: Newspaper },
   { href: "/admin/articles", label: "Haberler", icon: FileText },
+  { href: "/admin/parametreler", label: "Hesap parametreleri", icon: Calculator },
+  { href: "/admin/kunye", label: "Künye", icon: Stamp },
+  { href: "/admin/yasal", label: "Yasal sayfalar", icon: Scale },
+  { href: "/admin/settings", label: "Site ayarları", icon: Settings },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ role }: { role?: TenantRole }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const navContent = (
     <nav className="flex-1 space-y-1 p-3">
-      {navItems.map((item) => {
+      {navItems
+        .filter(
+          (item) =>
+            !(
+              role === "author" &&
+              (item.href === "/admin/settings" ||
+                item.href === "/admin/parametreler" ||
+                item.href === "/admin/kunye" ||
+                item.href === "/admin/yasal")
+            )
+        )
+        .map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
@@ -82,6 +114,14 @@ export function AdminSidebar() {
               </button>
             </div>
             {navContent}
+            <div className="border-t border-slate-100 p-3">
+              {role ? (
+                <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                  Rol: {role}
+                </p>
+              ) : null}
+              <AdminLogoutButton />
+            </div>
           </aside>
         </>
       )}
@@ -94,12 +134,18 @@ export function AdminSidebar() {
         </div>
         {navContent}
         <div className="border-t border-slate-100 p-3">
+          {role ? (
+            <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              Rol: {role}
+            </p>
+          ) : null}
           <Link
             href="/"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
           >
             Siteye dön
           </Link>
+          <AdminLogoutButton />
         </div>
       </aside>
     </>

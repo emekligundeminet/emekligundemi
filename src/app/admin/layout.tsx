@@ -1,17 +1,15 @@
-import { AdminShell } from "@/components/admin-shell";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AdminShell>
-      <div className="w-full">{children}</div>
-    </AdminShell>
-  );
+  return children;
 }

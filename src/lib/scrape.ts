@@ -1,29 +1,9 @@
 import Parser from "rss-parser";
 import * as cheerio from "cheerio";
+import type { CekilenHaber, TaramaSonucu } from "@/types/cekilen";
+import { keywordsToRegex, type ScrapeConfig } from "@/lib/scrape-config";
 
-export type CekilenHaber = {
-  id: string;
-  kaynak: string;
-  baslik: string;
-  tarih: string;
-  link: string;
-  govde: string;
-};
-
-export type TaramaSonucu = {
-  haberler: CekilenHaber[];
-  tarandi: number;
-  mesaj: string;
-};
-
-const FEEDS = [
-  { name: "Sözcü Son Dakika", url: "https://www.sozcu.com.tr/feeds-son-dakika" },
-  { name: "Sözcü Haberler", url: "https://www.sozcu.com.tr/feeds-haberler" },
-];
-
-const OLUMLU =
-  /emekli|SGK|EYT|intibak|prim gün|maaş bağla|aylık bağla|yaşlılık aylığı|BAĞ-?KUR|zam/i;
-const NEGATIF = /emekli oldu|futbol|teknik direktör|transfer|hayatını kaybet/i;
+export type { CekilenHaber, TaramaSonucu };
 
 const HEADERS = {
   "User-Agent":
@@ -32,9 +12,11 @@ const HEADERS = {
 
 const parser = new Parser();
 
-function eslesiyor(baslik: string, govde: string) {
+function eslesiyor(baslik: string, govde: string, include: RegExp | null, exclude: RegExp | null) {
   const metin = `${baslik} ${govde}`;
-  return OLUMLU.test(metin) && !NEGATIF.test(metin);
+  if (include && !include.test(metin)) return false;
+  if (exclude && exclude.test(metin)) return false;
+  return true;
 }
 
 async function govdeCek(url: string) {
@@ -54,12 +36,14 @@ async function govdeCek(url: string) {
   return parcalar.join("\n\n") || el.text().replace(/\s+/g, " ").trim();
 }
 
-export async function tara(): Promise<TaramaSonucu> {
+export async function tara(config: ScrapeConfig): Promise<TaramaSonucu> {
   const gorulen = new Set<string>();
   const sonuclar: CekilenHaber[] = [];
   let tarandi = 0;
+  const include = keywordsToRegex(config.include);
+  const exclude = keywordsToRegex(config.exclude);
 
-  for (const feed of FEEDS) {
+  for (const feed of config.feeds) {
     try {
       const parsed = await parser.parseURL(feed.url);
       const items = parsed.items ?? [];
@@ -80,7 +64,7 @@ export async function tara(): Promise<TaramaSonucu> {
           continue;
         }
 
-        if (!eslesiyor(item.title ?? "", govde)) continue;
+        if (!eslesiyor(item.title ?? "", govde, include, exclude)) continue;
 
         sonuclar.push({
           id: link,

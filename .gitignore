@@ -6,3 +6,6 @@ out
 .env
 .env.local
 .env*.local
+.env.example
+tsconfig.tsbuildinfo
+supabase/migrations/
