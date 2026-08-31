@@ -597,6 +597,35 @@ export async function listEvergreenTargets(
     .filter((row) => row.path.startsWith("/"));
 }
 
+/** CTA hedefleri: yalnızca rehber (type=guide). Haberler asla listelenmez. */
+export async function listGuideTargets(
+  tenantId: string,
+  excludeId?: string
+): Promise<EvergreenTarget[]> {
+  const supabase = createSupabaseAdminClient();
+  let query = supabase
+    .from("articles")
+    .select("id,title,slug,type,category_id,categories(name,slug)")
+    .eq("tenant_id", tenantId)
+    .eq("type", "guide")
+    .eq("status", "published")
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false });
+  if (excludeId) query = query.neq("id", excludeId);
+  const { data, error } = await query;
+  if (error) fail(error);
+  return ((data ?? []) as ArticleRow[]).map((row) => {
+    const cat = Array.isArray(row.categories) ? row.categories[0] : row.categories;
+    return {
+      id: row.id as string,
+      title: row.title as string,
+      path: articlePath({ slug: row.slug as string, type: "guide" }),
+      category_id: (row.category_id as string | null) ?? null,
+      category_name: cat?.name ?? null,
+    };
+  });
+}
+
 export async function deleteArticle(tenantId: string, id: string) {
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase

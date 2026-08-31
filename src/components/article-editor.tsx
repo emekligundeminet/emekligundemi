@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { EvergreenLinkPicker } from "@/components/evergreen-link-picker";
+import { CtaLinkDialog } from "@/components/cta-link-dialog";
+import { IcLinkCta, type IcLinkCtaAttrs } from "@/lib/tiptap/ic-link-cta";
 import { uploadArticleImage } from "@/lib/upload-article-image";
 import { readNaturalSize } from "@/lib/read-natural-size";
 import { toast } from "sonner";
@@ -29,6 +31,7 @@ import {
   List,
   ListOrdered,
   Loader2,
+  SquareArrowOutUpRight,
   Table,
 } from "lucide-react";
 
@@ -63,6 +66,7 @@ export function ArticleEditor({
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageAlt, setImageAlt] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [ctaDialogOpen, setCtaDialogOpen] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -91,6 +95,7 @@ export function ArticleEditor({
       TableKit.configure({
         table: { resizable: false, renderWrapper: true },
       }),
+      IcLinkCta,
     ],
     content: value || "",
     onUpdate: ({ editor: ed }) => onChange(ed.getHTML()),
@@ -154,6 +159,14 @@ export function ArticleEditor({
       }
     },
     [editor, savedRange]
+  );
+
+  const insertCta = useCallback(
+    (attrs: IcLinkCtaAttrs) => {
+      if (!editor) return;
+      editor.chain().focus().setIcLinkCta(attrs).run();
+    },
+    [editor]
   );
 
   const insertEditorImage = useCallback(
@@ -357,6 +370,18 @@ export function ArticleEditor({
           variant="outline"
           size="sm"
           onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setCtaDialogOpen(true)}
+          title="İç link kutusu (rehber / hesaplama aracı)"
+          className={active(editor.isActive("icLinkCta"))}
+        >
+          <SquareArrowOutUpRight className="size-4" />
+          İç link kutusu
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             setImageAlt("");
             setImageDialogOpen(true);
@@ -428,6 +453,13 @@ export function ArticleEditor({
         selectedText={selectedText}
         linkCount={(editor.getHTML().match(/<a\s/gi) ?? []).length}
         onInsert={insertLinkAtCursor}
+      />
+
+      <CtaLinkDialog
+        open={ctaDialogOpen}
+        onOpenChange={setCtaDialogOpen}
+        excludeId={excludeArticleId}
+        onInsert={insertCta}
       />
 
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
