@@ -22,13 +22,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Yalnızca görsel yükleyin." }, { status: 400 });
   }
 
+  const kind = new URL(request.url).searchParams.get("kind");
+  const isMark = kind === "mark";
+
   const input = Buffer.from(await file.arrayBuffer());
   let webpBuffer: Buffer;
   try {
-    await assertUploadCoverWidth(input);
+    if (!isMark) await assertUploadCoverWidth(input);
     webpBuffer = await sharp(input)
       .rotate()
-      .resize(1920, null, { withoutEnlargement: true })
+      .resize(isMark ? 512 : 1920, null, { withoutEnlargement: true })
       .webp({ quality: 82 })
       .toBuffer();
   } catch (err) {

@@ -1,7 +1,11 @@
-export async function uploadArticleImage(file: File): Promise<string> {
+export async function uploadArticleImage(
+  file: File,
+  kind: "cover" | "mark" = "cover"
+): Promise<string> {
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch("/api/admin/upload-article-image", {
+  const qs = kind === "mark" ? "?kind=mark" : "";
+  const res = await fetch(`/api/admin/upload-article-image${qs}`, {
     method: "POST",
     body: form,
   });

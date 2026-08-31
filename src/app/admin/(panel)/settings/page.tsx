@@ -66,7 +66,7 @@ export default function AdminSettingsPage() {
     }
     setUploading(true);
     try {
-      const url = await uploadArticleImage(file);
+      const url = await uploadArticleImage(file, "mark");
       set("logo_url", url);
       toast.success("Logo yüklendi. Kaydet’e basın.");
     } catch (err) {

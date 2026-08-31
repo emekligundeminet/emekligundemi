@@ -112,7 +112,7 @@ export default function AdminSourcesPage() {
     }
     onBusy(true);
     try {
-      const url = await uploadArticleImage(file);
+      const url = await uploadArticleImage(file, "mark");
       onDone(url);
       toast.success("Logo yüklendi.");
     } catch (err) {
