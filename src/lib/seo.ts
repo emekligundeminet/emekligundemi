@@ -61,6 +61,24 @@ export function ogCoverImage(url: string, alt: string) {
   return { url, alt, ...size };
 }
 
+/**
+ * Sitemap için kapak URL'i: ?w=&h= atılır. Next'in sitemap serializer'ı
+ * image:loc içindeki & karakterini escape etmediği için ham & XML'i kırıyor.
+ */
+export function sitemapImageUrl(url: string): string | null {
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    parsed.search = "";
+    parsed.hash = "";
+    const clean = parsed.toString();
+    return /[<>&"']/.test(clean) ? null : clean;
+  } catch {
+    return null;
+  }
+}
+
 export function articleSocialMeta(opts: {
   title: string;
   description?: string;

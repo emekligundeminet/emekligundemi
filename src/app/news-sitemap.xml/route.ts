@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { absolutePath, getSiteMeta } from "@/lib/site-meta";
 import { cachedNewsSitemapArticles } from "@/lib/cached-public";
+import { sitemapImageUrl } from "@/lib/seo";
 import { xmlEscape } from "@/lib/xml";
 
 export const revalidate = 300;
@@ -19,8 +20,9 @@ export async function GET() {
       const loc = xmlEscape(absolutePath(site.origin, `/${a.slug}`));
       const title = xmlEscape(a.title);
       const date = xmlEscape(a.published_at);
-      const image = a.cover_url
-        ? `\n    <image:image>\n      <image:loc>${xmlEscape(a.cover_url)}</image:loc>\n    </image:image>`
+      const cover = a.cover_url ? sitemapImageUrl(a.cover_url) : null;
+      const image = cover
+        ? `\n    <image:image>\n      <image:loc>${xmlEscape(cover)}</image:loc>\n    </image:image>`
         : "";
       return `  <url>
     <loc>${loc}</loc>

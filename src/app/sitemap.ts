@@ -3,6 +3,7 @@ import { absolutePath, getSiteMeta } from "@/lib/site-meta";
 import { cachedSitemapData } from "@/lib/cached-public";
 import { articlePath, isGuide, isReservedBlogIndexSlug } from "@/lib/content-type";
 import { authorPath } from "@/lib/author-slug";
+import { sitemapImageUrl } from "@/lib/seo";
 import { getAuthors } from "@/lib/store";
 import { listYayindaYasal } from "@/lib/yasal";
 import { isKurumsalYasalSlug, yasalPath } from "@/types/yasal";
@@ -68,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const articleEntries: MetadataRoute.Sitemap = articles.map((a) => {
     const path = articlePath(a);
-    const cover = a.cover_url?.trim();
+    const cover = a.cover_url ? sitemapImageUrl(a.cover_url) : null;
     return {
       url: absolutePath(site.origin, path),
       lastModified: new Date(a.updated_at || a.published_at),
