@@ -172,10 +172,43 @@
 .haber-icerik img:not([width]) {
   aspect-ratio: 16 / 9;
 }
+/* Tablo dar ekranda sayfayı genişletmesin: taşma kendi içinde kaydırılır. */
+.haber-icerik .tableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 0 0.9rem;
+}
+.haber-icerik table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
 .haber-icerik th,
 .haber-icerik td {
   border: 1px solid #e2e8f0;
   padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.haber-icerik th {
+  background: #f8f8f8;
+  font-weight: 700;
+}
+.haber-icerik th p,
+.haber-icerik td p {
+  margin: 0;
+  text-align: left;
+  hyphens: none;
+}
+@media (max-width: 480px) {
+  .haber-icerik table {
+    font-size: 0.875rem;
+  }
+  .haber-icerik th,
+  .haber-icerik td {
+    padding: 0.4rem 0.5rem;
+  }
 }
 
 /* Gövde içi iç link kutusu: rehber / hesaplama aracı. Haber düzenini bozmayan sade blok. */
@@ -398,9 +431,19 @@
   text-align: start;
   text-decoration: none;
   text-transform: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   word-spacing: 0;
+}
+/* Dar ekranda başlık kesilmesin: küçülür ve sarar. */
+@media (max-width: 767px) {
+  .section-ribbon {
+    align-items: center;
+  }
+  .section-ribbon-title {
+    max-width: none;
+    font-size: 1.375rem;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
 }
 .section-ribbon-bar {
   flex: 1 1 auto;

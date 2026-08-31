@@ -128,7 +128,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <ReaderArticleBlock
           article={article}
           siteName={site.name}

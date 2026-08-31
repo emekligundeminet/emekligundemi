@@ -56,19 +56,25 @@ export function ReaderArticleBlock({
         ) : null}
       </nav>
 
-      <p className="mt-4 text-sm font-medium text-[var(--brand)]">
-        <Link
-          href={archivePathFromPublishedAt(article.published_at)}
-          className="hover:underline"
-        >
-          {formatNewsDateTime(article.published_at)}
-        </Link>
+      <div className="mt-4 flex flex-col gap-0.5 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+        <p className="font-medium text-[var(--brand)]">
+          <span className="font-normal text-neutral-500">Yayımlanma: </span>
+          <Link
+            href={archivePathFromPublishedAt(article.published_at)}
+            className="hover:underline"
+          >
+            {formatNewsDateTime(article.published_at)}
+          </Link>
+        </p>
         {updated ? (
-          <span className="ml-2 font-normal text-neutral-500">
+          <p className="text-neutral-500">
+            <span className="hidden sm:inline" aria-hidden>
+              ·{" "}
+            </span>
             Güncellenme: {formatNewsDateTime(updated)}
-          </span>
+          </p>
         ) : null}
-      </p>
+      </div>
 
       <h1 className="mt-2 w-full text-[1.75rem] font-extrabold leading-snug md:text-[2rem]">
         {article.title}
@@ -134,7 +140,7 @@ export function ReaderArticleBlock({
         </p>
         <a
           href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Düzeltme: ${article.title}`)}&body=${encodeURIComponent(articleUrl)}`}
-          className="mt-3 inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-[var(--brand)] px-4 text-[15px] font-bold text-white hover:opacity-90 sm:mt-0"
+          className="mt-3 flex min-h-11 w-full shrink-0 items-center justify-center rounded-md bg-[var(--brand)] px-4 text-[15px] font-bold text-white hover:opacity-90 sm:mt-0 sm:inline-flex sm:w-auto"
         >
           Hata bildir
         </a>
