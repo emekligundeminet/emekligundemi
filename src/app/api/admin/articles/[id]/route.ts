@@ -5,6 +5,7 @@ import {
   isPublishStatus,
   requireAdminApi,
 } from "@/lib/admin-auth";
+import { assertPublishReady } from "@/lib/cover-image";
 import { deleteArticle, getArticle, publishArticle, updateArticle } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
@@ -61,6 +62,17 @@ export async function PATCH(
   }
   try {
     const before = await getArticle(ctx.tenantId, articleId);
+    if (!before) {
+      return NextResponse.json({ message: "Bulunamadı." }, { status: 404 });
+    }
+    const willPublish = Boolean(body.publish) || body.status === "published" || before.status === "published";
+    if (willPublish) {
+      await assertPublishReady({
+        coverUrl: body.cover_url !== undefined ? body.cover_url : before.cover_url,
+        authorId: body.author_id !== undefined ? body.author_id : before.author_id,
+        excerpt: body.excerpt !== undefined ? body.excerpt : before.excerpt,
+      });
+    }
     if (body.publish) {
       const article = await publishArticle(ctx.tenantId, articleId);
       const after = await getArticle(ctx.tenantId, articleId);

@@ -5,6 +5,7 @@ import {
   isPublishStatus,
   requireAdminApi,
 } from "@/lib/admin-auth";
+import { assertPublishReady } from "@/lib/cover-image";
 import { createArticle, getArticle, listArticles } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
@@ -50,6 +51,20 @@ export async function POST(request: Request) {
   if (isPublishStatus(body.status)) {
     const pub = forbidIfCannotPublish(ctx);
     if (pub) return pub;
+  }
+  if (body.status === "published") {
+    try {
+      await assertPublishReady({
+        coverUrl: body.cover_url,
+        authorId: body.author_id,
+        excerpt: body.excerpt,
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { message: err instanceof Error ? err.message : "Yayın şartı eksik." },
+        { status: 400 }
+      );
+    }
   }
   try {
     const article = await createArticle(ctx.tenantId, {
