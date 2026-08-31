@@ -22,6 +22,23 @@ export const NOINDEX_FOLLOW_ROBOTS = {
 
 export const OG_LOCALE = "tr_TR";
 
+export function toIso8601(raw: string): string {
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? raw : d.toISOString();
+}
+
+export function wordCountFromHtml(html: string): number {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return 0;
+  return text.split(" ").length;
+}
+
 export function rssAlternate(origin = SITE_ORIGIN): NonNullable<Metadata["alternates"]>["types"] {
   return { "application/rss+xml": `${origin.replace(/\/$/, "")}/rss.xml` };
 }

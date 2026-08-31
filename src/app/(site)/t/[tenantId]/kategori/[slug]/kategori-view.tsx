@@ -8,8 +8,8 @@ import {
   staticDocumentTitle,
   toArticleCard,
 } from "@/lib/site";
-import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
-import { isReservedBlogIndexSlug } from "@/lib/content-type";
+import { breadcrumbJsonLd, collectionPageJsonLd, itemListJsonLd, jsonLdScript } from "@/lib/json-ld";
+import { articlePath, isReservedBlogIndexSlug } from "@/lib/content-type";
 import { cachedCategories, cachedCategoryPage, cachedSiteMeta } from "@/lib/cached-public";
 import { feedPagePath } from "@/lib/feed-page";
 import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
@@ -79,12 +79,22 @@ export async function KategoriView({ tenantId, slug, page }: Args) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: jsonLdScript(
+            __html: jsonLdScript([
               breadcrumbJsonLd(site.origin, [
                 { name: "Emekli Haberleri", path: "/" },
                 { name: data.kat.name, path: `/kategori/${data.kat.slug}` },
-              ])
-            ),
+              ]),
+              collectionPageJsonLd({
+                name: categoryPageHeading(data.kat.slug, data.kat.name),
+                origin: site.origin,
+                path: `/kategori/${data.kat.slug}`,
+                description: categoryMetaDescription(data.kat),
+              }),
+              itemListJsonLd(
+                site.origin,
+                data.articles.map((a) => ({ name: a.title, path: articlePath(a) }))
+              ),
+            ]),
           }}
         />
       ) : null}

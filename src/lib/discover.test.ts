@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { coverWidthError, DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
-import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS, toIso8601, wordCountFromHtml } from "@/lib/seo";
 
 describe("Keşfet yayın eşiği", () => {
   it("1200px altı kapak reddedilir", () => {
@@ -20,5 +20,11 @@ describe("Keşfet yayın eşiği", () => {
   it("index robots Keşfet büyük önizleme taşır", () => {
     assert.equal(INDEX_ROBOTS.googleBot["max-image-preview"], "large");
     assert.equal(NOINDEX_FOLLOW_ROBOTS.index, false);
+  });
+
+  it("ISO 8601 ve kelime sayısı", () => {
+    assert.match(toIso8601("2026-08-31T00:00:00+03:00"), /T/);
+    assert.equal(wordCountFromHtml("<p>Bir iki üç</p>"), 3);
+    assert.equal(wordCountFromHtml("<script>x</script><p>tek</p>"), 1);
   });
 });

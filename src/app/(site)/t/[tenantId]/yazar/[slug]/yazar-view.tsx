@@ -61,13 +61,17 @@ export async function YazarView({ tenantId, slug, page }: Args) {
             ]),
             {
               "@context": "https://schema.org",
-              "@type": "Person",
-              name: author.name,
+              "@type": "ProfilePage",
               url: `${site.origin}${path}`,
-              image: author.logo_url || undefined,
-              description: author.bio || undefined,
-              jobTitle: "Yazar",
-              worksFor: { "@type": "NewsMediaOrganization", name: site.name },
+              mainEntity: {
+                "@type": "Person",
+                name: author.name,
+                url: `${site.origin}${path}`,
+                image: author.logo_url || undefined,
+                description: author.bio || undefined,
+                jobTitle: "Yazar",
+                worksFor: { "@type": "NewsMediaOrganization", name: site.name },
+              },
             },
           ]),
         }}

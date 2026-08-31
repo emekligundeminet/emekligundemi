@@ -22,21 +22,21 @@ export async function GET() {
       const description = xmlEscape(a.excerpt || a.title);
       const pubDate = a.published_at ? new Date(a.published_at).toUTCString() : "";
       const cover = toAbsoluteUrl(site.origin, a.cover_url);
-      const enclosure = cover
-        ? `\n      <enclosure url="${xmlEscape(cover)}" type="image/webp" />`
+      const media = cover
+        ? `\n      <enclosure url="${xmlEscape(cover)}" type="image/webp" />\n      <media:content url="${xmlEscape(cover)}" medium="image" />`
         : "";
       return `    <item>
       <title>${title}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <description>${description}</description>
-      ${pubDate ? `<pubDate>${xmlEscape(pubDate)}</pubDate>` : ""}${enclosure}
+      ${pubDate && a.published_at ? `<pubDate>${xmlEscape(pubDate)}</pubDate>\n      <dc:date>${xmlEscape(a.published_at)}</dc:date>` : ""}${media}
     </item>`;
     })
     .join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${xmlEscape(site.name)}</title>
     <link>${xmlEscape(site.origin)}</link>

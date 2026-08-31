@@ -68,11 +68,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const articleEntries: MetadataRoute.Sitemap = articles.map((a) => {
     const path = articlePath(a);
+    const cover = a.cover_url?.trim();
     return {
       url: absolutePath(site.origin, path),
       lastModified: new Date(a.updated_at || a.published_at),
       changeFrequency: isGuide(a.type) ? "monthly" : "weekly",
       priority: isGuide(a.type) ? 0.6 : 0.8,
+      images: cover ? [cover] : undefined,
     };
   });
 

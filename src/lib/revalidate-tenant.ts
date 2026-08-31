@@ -1,5 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { cacheTags } from "@/lib/cache-tags";
+import { pingIndexNow } from "@/lib/indexnow";
+import { SITE_ORIGIN } from "@/lib/site";
 
 /** Yayın/güncelleme/silme sonrası yalnız BU tenant'ın cache'i. */
 export function revalidateTenantContent(opts: {
@@ -23,4 +25,13 @@ export function revalidateTenantContent(opts: {
   }
   // Tam sayfa ISR kabuğu
   revalidatePath(`/t/${tenantId}`, "layout");
+
+  const publicPaths = [
+    "/",
+    ...[...new Set((opts.slugs ?? []).filter(Boolean))].map((s) => `/${s}`),
+    ...[...new Set((opts.categorySlugs ?? []).filter((s): s is string => Boolean(s && s.trim())))].map(
+      (c) => `/kategori/${c}`
+    ),
+  ];
+  pingIndexNow(publicPaths, SITE_ORIGIN);
 }

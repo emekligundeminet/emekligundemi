@@ -4,8 +4,8 @@ import { HomeHero } from "@/components/home-hero";
 import { HomeStoryStrip } from "@/components/home-story-strip";
 import { MostRead } from "@/components/most-read";
 import { AdSlot } from "@/components/ad-slot";
-import { isReservedBlogIndexSlug } from "@/lib/content-type";
-import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
+import { articlePath, isReservedBlogIndexSlug } from "@/lib/content-type";
+import { itemListJsonLd, jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
 import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS, OG_LOCALE, ogCoverImage, rssAlternate } from "@/lib/seo";
 import { BLOG_INDEX_PATH, BLOG_INDEX_TITLE, BRAND_LOGO, HOME_TITLE, SITE_TAGLINE, TITLE_SUFFIX, categorySlugOf } from "@/lib/site";
 import { cachedBlogArticles, cachedCategories, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
@@ -120,6 +120,14 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           origin: site.origin,
           description: site.description,
         }),
+        ...(articles.length
+          ? [
+              itemListJsonLd(
+                site.origin,
+                articles.slice(0, 20).map((a) => ({ name: a.title, path: articlePath(a) }))
+              ),
+            ]
+          : []),
       ])
     : null;
 

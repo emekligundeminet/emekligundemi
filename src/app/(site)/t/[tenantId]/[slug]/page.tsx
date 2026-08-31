@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { HOME_TITLE } from "@/lib/site";
 import { absolutePath, toAbsoluteUrl } from "@/lib/site-meta";
 import { articleJsonLdByType, publicArticleUrl } from "@/lib/public-article-url";
-import { articleSocialMeta } from "@/lib/seo";
+import { articleSocialMeta, wordCountFromHtml } from "@/lib/seo";
 import { isGuide } from "@/lib/content-type";
 import { cachedArticle, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -115,6 +115,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
       authorName: article.author?.name ?? null,
       authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
       section: article.category_name,
+      wordCount: wordCountFromHtml(article.content_html),
     }),
     breadcrumbJsonLd(site.origin, crumbs),
   ];

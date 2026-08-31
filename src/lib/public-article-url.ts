@@ -1,4 +1,15 @@
 import { jsonLdSchemaType } from "@/lib/content-type";
+import { publisherLogoUrl } from "@/lib/publisher";
+import { SITE_ORIGIN } from "@/lib/site";
+import { toIso8601 } from "@/lib/seo";
+
+function originOf(canonical: string) {
+  try {
+    return new URL(canonical).origin;
+  } catch {
+    return SITE_ORIGIN;
+  }
+}
 
 /**
  * Public haber yolu: /{slug}. İç ISR yolu /t/{tenantId} asla üretilmez.
@@ -49,16 +60,19 @@ export function newsArticleJsonLd(opts: {
   authorName: string | null;
   authorUrl?: string | null;
   section?: string | null;
+  wordCount?: number;
 }) {
+  const logo = publisherLogoUrl(originOf(opts.canonical));
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: clipHeadline(opts.title),
-    inLanguage: "tr",
+    inLanguage: "tr-TR",
     isAccessibleForFree: true,
-    datePublished: opts.publishedAt,
-    dateModified: opts.updatedAt,
+    datePublished: toIso8601(opts.publishedAt),
+    dateModified: toIso8601(opts.updatedAt),
     articleSection: opts.section || undefined,
+    wordCount: opts.wordCount && opts.wordCount > 0 ? opts.wordCount : undefined,
     image: opts.coverAbs
       ? [
           {
@@ -70,7 +84,7 @@ export function newsArticleJsonLd(opts: {
         ]
       : undefined,
     description: opts.excerpt || undefined,
-    mainEntityOfPage: opts.canonical,
+    mainEntityOfPage: { "@type": "WebPage", "@id": opts.canonical },
     author: opts.authorName
       ? {
           "@type": "Person",
@@ -81,8 +95,10 @@ export function newsArticleJsonLd(opts: {
     publisher: {
       "@type": "NewsMediaOrganization",
       name: opts.siteName,
-      logo: { "@type": "ImageObject", url: opts.logoUrl },
+      logo: { "@type": "ImageObject", url: logo, width: 600, height: 160 },
     },
+    copyrightHolder: { "@type": "NewsMediaOrganization", name: opts.siteName },
+    spatialCoverage: { "@type": "Country", name: "TR" },
   };
 }
 
