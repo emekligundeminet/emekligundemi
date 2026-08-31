@@ -1,3 +1,5 @@
+import { isGuide } from "@/lib/content-type";
+
 /** Google Keşfet kapak: en az 1200px geniş (resmi şart). */
 export const DISCOVER_COVER_MIN_WIDTH = 1200;
 
@@ -5,6 +7,7 @@ export function publishFieldErrors(input: {
   coverUrl?: string | null;
   authorId?: string | null;
   excerpt?: string | null;
+  type?: string | null;
 }): string[] {
   const errors: string[] = [];
   if (!input.coverUrl?.trim()) {
@@ -13,7 +16,7 @@ export function publishFieldErrors(input: {
   if (!input.authorId?.trim()) {
     errors.push("Yayında imzalı yazar gerekli.");
   }
-  if (!input.excerpt?.trim()) {
+  if (!isGuide(input.type) && !input.excerpt?.trim()) {
     errors.push("Arama ve Keşfet snippet’i için özet gerekli.");
   }
   return errors;

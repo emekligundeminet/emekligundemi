@@ -68,6 +68,7 @@ export async function POST(request: Request) {
         coverUrl: body.cover_url,
         authorId: body.author_id,
         excerpt: body.excerpt,
+        type: parseContentType(body.type),
       });
     } catch (err) {
       return NextResponse.json(

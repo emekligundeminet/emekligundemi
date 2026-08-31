@@ -6,6 +6,7 @@ export function assertPublishReady(input: {
   coverUrl?: string | null;
   authorId?: string | null;
   excerpt?: string | null;
+  type?: string | null;
 }): void {
   const fields = publishFieldErrors(input);
   if (fields.length) throw new Error(fields[0]);

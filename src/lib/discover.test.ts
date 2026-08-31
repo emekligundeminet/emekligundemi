@@ -38,6 +38,34 @@ describe("Keşfet yayın eşiği", () => {
     );
   });
 
+  it("rehber yazısında özet zorunlu değil", () => {
+    assert.equal(
+      publishFieldErrors({
+        coverUrl: "https://x/a.webp",
+        authorId: "1",
+        excerpt: "",
+        type: "guide",
+      }).length,
+      0
+    );
+    assert.ok(
+      publishFieldErrors({
+        coverUrl: "https://x/a.webp",
+        authorId: "1",
+        excerpt: "",
+        type: "news",
+      }).some((e) => e.includes("özet"))
+    );
+    assert.doesNotThrow(() =>
+      assertPublishReady({
+        coverUrl: "https://x/a.webp?w=1600&h=900",
+        authorId: "1",
+        excerpt: null,
+        type: "guide",
+      })
+    );
+  });
+
   it("index robots Keşfet büyük önizleme taşır", () => {
     assert.equal(INDEX_ROBOTS.googleBot["max-image-preview"], "large");
     assert.equal(NOINDEX_FOLLOW_ROBOTS.index, false);

@@ -80,6 +80,7 @@ export async function PATCH(
         coverUrl: body.cover_url !== undefined ? body.cover_url : before.cover_url,
         authorId: body.author_id !== undefined ? body.author_id : before.author_id,
         excerpt: body.excerpt !== undefined ? body.excerpt : before.excerpt,
+        type: body.type !== undefined ? parseContentType(body.type) : before.type,
       });
     }
     if (body.publish) {

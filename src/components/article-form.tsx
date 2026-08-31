@@ -158,6 +158,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
           coverUrl,
           authorId,
           excerpt,
+          type: contentType,
         });
         if (ready[0]) {
           toast.error(ready[0]);
@@ -284,11 +285,20 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,6fr)_minmax(0,3fr)] lg:gap-6">
         <div className="order-2 min-w-0 lg:order-1">
           <div className="mb-3 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-            <label className="text-sm font-medium text-slate-700">Özet</label>
+            <label className="text-sm font-medium text-slate-700">
+              Özet
+              {contentType === "guide" ? (
+                <span className="ml-1.5 font-normal text-slate-500">(isteğe bağlı)</span>
+              ) : null}
+            </label>
             <Textarea
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              placeholder="Başlığın hemen altında görünecek özet"
+              placeholder={
+                contentType === "guide"
+                  ? "Boş bırakırsanız yazıda görünmez"
+                  : "Başlığın hemen altında görünecek özet"
+              }
               rows={3}
               className="resize-y text-sm"
             />
