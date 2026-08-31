@@ -2,6 +2,7 @@ import { CategoryFeed } from "@/components/category-feed";
 import { BLOG_INDEX_TITLE, BRAND_LOGO, TITLE_SUFFIX, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { cachedBlogArticles, cachedSiteMeta } from "@/lib/cached-public";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { feedPagePath } from "@/lib/feed-page";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -17,7 +18,7 @@ export async function blogIndexMetadata({ tenantId, page }: Args): Promise<Metad
     title: { absolute: staticDocumentTitle(BLOG_INDEX_TITLE) },
     description,
     alternates: { canonical },
-    robots: page > 1 ? { index: false, follow: true } : undefined,
+    robots: page > 1 ? NOINDEX_FOLLOW_ROBOTS : undefined,
     openGraph: {
       type: "website",
       siteName: TITLE_SUFFIX,

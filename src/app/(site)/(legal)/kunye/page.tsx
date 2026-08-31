@@ -1,6 +1,7 @@
 import { LegalPageShell } from "@/components/legal-page-shell";
 import { filledKunye, getKunye, kunyeValue } from "@/lib/kunye";
 import { jsonLdScript } from "@/lib/json-ld";
+import { INDEX_ROBOTS } from "@/lib/seo";
 import { SITE_NAME, SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import type { KunyeVeri } from "@/types/kunye";
 import type { Metadata } from "next";
@@ -11,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: staticDocumentTitle("Künye") },
     description: "Emekliler internet haber sitesinin yayın künyesi.",
-    robots: { index: true, follow: true },
+    robots: INDEX_ROBOTS,
     alternates: { canonical: `${SITE_ORIGIN}/kunye` },
     openGraph: {
       title: "Künye",

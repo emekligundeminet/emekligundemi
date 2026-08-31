@@ -7,6 +7,7 @@ import {
   parseArchiveYear,
 } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { HOME_TITLE, staticDocumentTitle } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: staticDocumentTitle(title) },
     description: `${year} yılında yayınlanan emeklilik haberleri.`,
-    robots: { index: false, follow: true },
+    robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title, url: site ? `${site.origin}${path}` : path },
   };

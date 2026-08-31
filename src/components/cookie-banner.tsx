@@ -39,8 +39,8 @@ export function CookieBanner() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]"
-      role="dialog"
+      className="fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]"
+      role="region"
       aria-label="Çerez tercihi"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">

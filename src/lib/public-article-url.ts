@@ -48,14 +48,27 @@ export function newsArticleJsonLd(opts: {
   logoUrl: string;
   authorName: string | null;
   authorUrl?: string | null;
+  section?: string | null;
 }) {
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: clipHeadline(opts.title),
+    inLanguage: "tr",
+    isAccessibleForFree: true,
     datePublished: opts.publishedAt,
     dateModified: opts.updatedAt,
-    image: opts.coverAbs ? [opts.coverAbs] : undefined,
+    articleSection: opts.section || undefined,
+    image: opts.coverAbs
+      ? [
+          {
+            "@type": "ImageObject",
+            url: opts.coverAbs,
+            width: 1200,
+            height: 675,
+          },
+        ]
+      : undefined,
     description: opts.excerpt || undefined,
     mainEntityOfPage: opts.canonical,
     author: opts.authorName

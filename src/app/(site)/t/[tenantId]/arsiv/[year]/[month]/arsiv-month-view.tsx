@@ -12,6 +12,7 @@ import {
 } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
 import { getPublishedArticles } from "@/lib/data/articles";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { HOME_TITLE, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -30,7 +31,7 @@ export async function arsivMonthMetadata({ tenantId, year: y, month: m }: Args):
   return {
     title: { absolute: staticDocumentTitle(`${title} haberleri`) },
     description: `${title} tarihinde yayınlanan emeklilik haberleri.`,
-    robots: { index: false, follow: true },
+    robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: { title: `${title} haberleri`, url: site ? `${site.origin}${path}` : path },
   };

@@ -2,6 +2,7 @@ import { LegalPageShell } from "@/components/legal-page-shell";
 import { YasalMarkdown } from "@/components/yasal-markdown";
 import { getKunye } from "@/lib/kunye";
 import { applyYasalTokens, formatYasalTarih, getYasalSayfa } from "@/lib/yasal";
+import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import { isKurumsalYasalSlug, yasalPath } from "@/types/yasal";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -15,13 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   if (isKurumsalYasalSlug(slug)) permanentRedirect(yasalPath(slug));
   const page = await getYasalSayfa(slug);
-  if (!page) return { robots: { index: false, follow: true } };
+  if (!page) return { robots: NOINDEX_FOLLOW_ROBOTS };
   const path = yasalPath(page.slug);
   const description = page.baslik;
   return {
     title: { absolute: staticDocumentTitle(page.baslik) },
     description,
-    robots: { index: true, follow: true },
+    robots: INDEX_ROBOTS,
     alternates: { canonical: `${SITE_ORIGIN}${path}` },
     openGraph: {
       title: page.baslik,

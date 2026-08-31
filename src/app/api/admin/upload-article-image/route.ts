@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { requireAdminApi } from "@/lib/admin-auth";
+import { assertUploadCoverWidth } from "@/lib/cover-image";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 
 const BUCKET = "article-images";
@@ -24,13 +25,15 @@ export async function POST(request: Request) {
   const input = Buffer.from(await file.arrayBuffer());
   let webpBuffer: Buffer;
   try {
+    await assertUploadCoverWidth(input);
     webpBuffer = await sharp(input)
       .rotate()
       .resize(1920, null, { withoutEnlargement: true })
-      .webp({ quality: 80 })
+      .webp({ quality: 82 })
       .toBuffer();
-  } catch {
-    return NextResponse.json({ message: "Görsel işlenemedi." }, { status: 400 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Görsel işlenemedi.";
+    return NextResponse.json({ message }, { status: 400 });
   }
 
   const supabase = createSupabaseAdminClient();

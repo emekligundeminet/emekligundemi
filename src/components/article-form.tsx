@@ -18,6 +18,7 @@ import type { Category } from "@/types/category";
 import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
+import { DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
 import { slugify } from "@/lib/slugify";
 import { uploadArticleImage } from "@/lib/upload-article-image";
 import { toast } from "sonner";
@@ -106,6 +107,18 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
         toast.error("Lütfen bir görsel seçin.");
         return;
       }
+      try {
+        const bmp = await createImageBitmap(file);
+        const width = bmp.width;
+        bmp.close();
+        if (width < DISCOVER_COVER_MIN_WIDTH) {
+          toast.error(`Kapak en az ${DISCOVER_COVER_MIN_WIDTH}px geniş olmalı (Google Keşfet).`);
+          e.target.value = "";
+          return;
+        }
+      } catch {
+        /* sunucu yine ölçer */
+      }
       setUploading(true);
       try {
         const url = await uploadArticleImage(file);
@@ -135,6 +148,17 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
       if (!finalSlug) {
         toast.error("Slug girin veya başlıktan oluşturun.");
         return;
+      }
+      if (nextStatus === "published") {
+        const ready = publishFieldErrors({
+          coverUrl,
+          authorId,
+          excerpt,
+        });
+        if (ready[0]) {
+          toast.error(ready[0]);
+          return;
+        }
       }
 
       setSaving(true);
@@ -495,6 +519,9 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-700">Kapak görseli</label>
+              <p className="text-xs text-slate-500">
+                Google Keşfet: en az {DISCOVER_COVER_MIN_WIDTH}px geniş, haberin kendisine ait.
+              </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                     <Input

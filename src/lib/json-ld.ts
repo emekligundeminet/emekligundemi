@@ -6,16 +6,23 @@ export function organizationJsonLd(opts: {
   origin: string;
   logoUrl: string;
   description?: string;
+  sameAs?: string[];
 }) {
+  const origin = opts.origin || SITE_ORIGIN;
   return {
     "@context": "https://schema.org",
     "@type": "NewsMediaOrganization",
     name: opts.name || SITE_NAME,
-    url: opts.origin || SITE_ORIGIN,
+    url: origin,
     logo: { "@type": "ImageObject", url: opts.logoUrl },
     email: CONTACT_EMAIL,
     founder: { "@type": "Person", name: PUBLISHER_NAME },
     description: opts.description,
+    sameAs: opts.sameAs?.filter(Boolean).length ? opts.sameAs.filter(Boolean) : undefined,
+    publishingPrinciples: `${origin}/yayin-ilkeleri`,
+    ethicsPolicy: `${origin}/yayin-ilkeleri`,
+    correctionsPolicy: `${origin}/duzeltme`,
+    ownershipFundingInfo: `${origin}/reklam`,
   };
 }
 

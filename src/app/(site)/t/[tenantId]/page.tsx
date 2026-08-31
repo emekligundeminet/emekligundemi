@@ -6,6 +6,7 @@ import { MostRead } from "@/components/most-read";
 import { AdSlot } from "@/components/ad-slot";
 import { isReservedBlogIndexSlug } from "@/lib/content-type";
 import { jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
+import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS, OG_LOCALE, ogCoverImage, rssAlternate } from "@/lib/seo";
 import { BLOG_INDEX_PATH, BLOG_INDEX_TITLE, BRAND_LOGO, HOME_TITLE, SITE_TAGLINE, TITLE_SUFFIX, categorySlugOf } from "@/lib/site";
 import { cachedBlogArticles, cachedCategories, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound } from "next/navigation";
@@ -23,22 +24,29 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { tenantId } = await params;
-  const site = await cachedSiteMeta(tenantId);
+  const [site, articles] = await Promise.all([
+    cachedSiteMeta(tenantId),
+    cachedHomeArticles(tenantId),
+  ]);
   const title = `${HOME_TITLE} | ${TITLE_SUFFIX}`;
   const description = site?.description ?? SITE_TAGLINE;
   const url = site?.origin;
+  const empty = articles.length === 0;
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: url ?? "/" },
+    robots: empty ? NOINDEX_FOLLOW_ROBOTS : INDEX_ROBOTS,
+    alternates: { canonical: url ?? "/", types: rssAlternate(url) },
     openGraph: {
       type: "website",
+      locale: OG_LOCALE,
       siteName: site?.name,
       title,
       description,
       url,
-      images: [{ url: BRAND_LOGO.onRed, alt: HOME_TITLE }],
+      images: [ogCoverImage(BRAND_LOGO.onRed, HOME_TITLE)],
     },
+    twitter: { card: "summary_large_image", title, description, images: [BRAND_LOGO.onRed] },
   };
 }
 
@@ -100,6 +108,12 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
           origin: site.origin,
           logoUrl: site.logoUrl,
           description: site.description,
+          sameAs: [
+            site.social.twitter,
+            site.social.facebook,
+            site.social.instagram,
+            site.social.whatsapp,
+          ].filter((u): u is string => Boolean(u)),
         }),
         websiteJsonLd({
           name: site.name,
@@ -118,9 +132,9 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {articles.length === 0 ? (
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
           <div className="border border-dashed border-neutral-200 px-6 py-16">
-            <p className="text-2xl font-bold">Henüz yayınlanmış haber yok</p>
+            <p className="text-2xl font-bold">Emekli haberleri yakında</p>
             <p className="mt-2 text-base text-neutral-500">
-              Admin panelden bir haberi yayınladığınızda manşet burada görünür.
+              SGK, zam ve emekli maaşı haberleri burada yayımlanacak.
             </p>
           </div>
         </div>

@@ -124,6 +124,12 @@ describe("articles.type tek karar kaynağı", () => {
     assert.ok(RESERVED_CONTENT_SLUGS.has("arsiv"));
   });
 
+  it("public path ve canonical /t/ içermez", () => {
+    assert.equal(articlePath({ slug: "emekli-zammi", type: "news" }), "/emekli-zammi");
+    assert.ok(!articlePath({ slug: "emekli-zammi", type: "news" }).includes("/t/"));
+    assert.ok(!articlePath({ slug: "rehber", type: "guide" }).includes("/t/"));
+  });
+
   it("/kategori/blog yönü reserved index slug; type değil", () => {
     assert.equal(isReservedBlogIndexSlug("blog"), true);
     assert.equal(isReservedBlogIndexSlug("rehber"), true);

@@ -7,12 +7,13 @@ import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { HOME_TITLE } from "@/lib/site";
 import { absolutePath, toAbsoluteUrl } from "@/lib/site-meta";
 import { articleJsonLdByType, publicArticleUrl } from "@/lib/public-article-url";
+import { articleSocialMeta } from "@/lib/seo";
 import { isGuide } from "@/lib/content-type";
 import { cachedArticle, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
+export const revalidate = 300;
 export const dynamicParams = true;
 
 export function generateStaticParams() {
@@ -44,25 +45,18 @@ export async function generateMetadata({
     title: { absolute: title },
     description,
     metadataBase: new URL(site.origin),
-    alternates: { canonical },
-    openGraph: {
-      type: "article",
+    ...articleSocialMeta({
+      title,
+      description,
+      canonical,
       siteName: site.name,
-      title,
-      description,
-      url: canonical,
-      publishedTime: article.published_at,
+      publishedAt: article.published_at,
       modifiedTime,
-      images: ogImage
-        ? [{ url: ogImage, alt: article.cover_alt || article.title }]
-        : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ogImage ? [ogImage] : undefined,
-    },
+      ogImage,
+      ogAlt: article.cover_alt || article.title,
+      authors: article.author?.name ? [article.author.name] : undefined,
+      section: article.category_name ?? undefined,
+    }),
   };
 }
 
@@ -120,6 +114,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
       logoUrl: site.logoUrl,
       authorName: article.author?.name ?? null,
       authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
+      section: article.category_name,
     }),
     breadcrumbJsonLd(site.origin, crumbs),
   ];

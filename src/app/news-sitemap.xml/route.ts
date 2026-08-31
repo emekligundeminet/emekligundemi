@@ -12,19 +12,19 @@ export async function GET() {
   }
 
   const articles = await cachedNewsSitemapArticles(site.tenantId);
+  const name = xmlEscape(site.name);
 
-  const logo = xmlEscape(site.logoUrl);
   const urls = articles
     .map((a) => {
       const loc = xmlEscape(absolutePath(site.origin, `/${a.slug}`));
       const title = xmlEscape(a.title);
       const date = xmlEscape(a.published_at);
-      const name = xmlEscape(site.name);
       const image = a.cover_url
         ? `\n    <image:image>\n      <image:loc>${xmlEscape(a.cover_url)}</image:loc>\n    </image:image>`
         : "";
       return `  <url>
     <loc>${loc}</loc>
+    <lastmod>${date}</lastmod>
     <news:news>
       <news:publication>
         <news:name>${name}</news:name>
@@ -41,13 +41,6 @@ export async function GET() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url>
-    <loc>${xmlEscape(site.origin)}</loc>
-    <image:image>
-      <image:loc>${logo}</image:loc>
-      <image:title>${xmlEscape(site.name)}</image:title>
-    </image:image>
-  </url>
 ${urls}
 </urlset>
 `;

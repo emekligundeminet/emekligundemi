@@ -4,6 +4,7 @@ import { CoverMedia } from "@/components/cover-media";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { cachedSiteMeta } from "@/lib/cached-public";
 import { getPublishedArticles } from "@/lib/data/articles";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { formatNewsDate, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { IMG_SIZES } from "@/lib/image-sizes";
 import { notFound } from "next/navigation";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const title = query ? `Arama: ${query}` : "Haber ara";
   return {
     title: { absolute: staticDocumentTitle(title) },
-    robots: { index: false, follow: true },
+    robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}/ara` : "/ara" },
   };
 }

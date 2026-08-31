@@ -1,24 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getSiteMeta } from "@/lib/site-meta";
+import { SITE_ORIGIN } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+const DISALLOW = ["/admin", "/admin/", "/api/", "/ara", "/t/"];
 
-export default async function robots(): Promise<MetadataRoute.Robots> {
-  const site = await getSiteMeta();
-  if (!site) {
-    return {
-      rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/admin/", "/api/", "/ara"] }],
-    };
-  }
+export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/admin", "/admin/", "/api/", "/ara"],
-      },
-    ],
-    sitemap: [`${site.origin}/sitemap.xml`, `${site.origin}/news-sitemap.xml`],
-    host: site.origin,
+    rules: [{ userAgent: "*", allow: "/", disallow: DISALLOW }],
+    sitemap: [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}/news-sitemap.xml`],
+    host: SITE_ORIGIN,
   };
 }

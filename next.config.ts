@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/favicon.ico",
+        destination: "/favicon.svg",
+        permanent: true,
+      },
+      {
         source: "/haber/:slug",
         destination: "/:slug",
         permanent: true,
@@ -79,6 +84,9 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2678400,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 144, 256, 384],
     remotePatterns: [
       { protocol: "https", hostname: "emekliler.org" },
       { protocol: "https", hostname: "www.emekliler.org" },

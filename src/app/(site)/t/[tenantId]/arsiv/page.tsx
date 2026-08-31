@@ -2,6 +2,7 @@ import Link from "next/link";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { archiveMonthPath, archiveYearPath, monthTitle } from "@/lib/archive";
 import { cachedArchiveYears, cachedSiteMeta } from "@/lib/cached-public";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { HOME_TITLE, staticDocumentTitle } from "@/lib/site";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: staticDocumentTitle("Haber arşivi") },
     description: "Emekliler.org haber arşivi — yıl ve aya göre.",
-    robots: { index: false, follow: true },
+    robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}/arsiv` : "/arsiv" },
     openGraph: { title: "Haber arşivi", url: site ? `${site.origin}/arsiv` : "/arsiv" },
   };

@@ -66,6 +66,7 @@ export async function YazarView({ tenantId, slug, page }: Args) {
               url: `${site.origin}${path}`,
               image: author.logo_url || undefined,
               description: author.bio || undefined,
+              jobTitle: "Yazar",
               worksFor: { "@type": "NewsMediaOrganization", name: site.name },
             },
           ]),

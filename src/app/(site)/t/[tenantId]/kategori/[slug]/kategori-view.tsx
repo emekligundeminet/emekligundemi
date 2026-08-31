@@ -12,6 +12,7 @@ import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { isReservedBlogIndexSlug } from "@/lib/content-type";
 import { cachedCategories, cachedCategoryPage, cachedSiteMeta } from "@/lib/cached-public";
 import { feedPagePath } from "@/lib/feed-page";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Article } from "@/types/article";
 import type { Metadata } from "next";
@@ -46,7 +47,7 @@ export async function kategoriMetadata({ tenantId, slug, page }: Args): Promise<
     title: { absolute: title },
     description,
     alternates: { canonical },
-    robots: empty || page > 1 ? { index: false, follow: true } : undefined,
+    robots: empty || page > 1 ? NOINDEX_FOLLOW_ROBOTS : undefined,
     openGraph: {
       type: "website",
       siteName: TITLE_SUFFIX,

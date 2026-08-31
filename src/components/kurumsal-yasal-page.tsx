@@ -1,6 +1,7 @@
 import { LegalPageShell } from "@/components/legal-page-shell";
 import { YasalMarkdown } from "@/components/yasal-markdown";
 import { getKunye } from "@/lib/kunye";
+import { INDEX_ROBOTS } from "@/lib/seo";
 import { SITE_ORIGIN, staticDocumentTitle } from "@/lib/site";
 import { applyYasalTokens, formatYasalTarih, getYasalSayfa } from "@/lib/yasal";
 import { type KurumsalYasalSlug, yasalPath } from "@/types/yasal";
@@ -30,7 +31,7 @@ export async function kurumsalYasalMetadata(slug: KurumsalYasalSlug): Promise<Me
   return {
     title: { absolute: staticDocumentTitle(title) },
     description,
-    robots: { index: true, follow: true },
+    robots: INDEX_ROBOTS,
     alternates: { canonical: `${SITE_ORIGIN}${path}` },
     openGraph: {
       title,

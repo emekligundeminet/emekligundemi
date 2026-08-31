@@ -7,6 +7,7 @@ import type { Article, ArticleStatus } from "@/types/article";
 import type { Category } from "@/types/category";
 import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
+import { assertPublishReady } from "@/lib/cover-image";
 import { articlePath, parseContentType, uniquifySlug } from "@/lib/content-type";
 import { authorSlug } from "@/lib/author-slug";
 import { CATEGORY_NAV_ORDER } from "@/lib/site";
@@ -401,6 +402,13 @@ export async function createArticle(tenantId: string, input: ArticleWrite) {
   const supabase = createSupabaseAdminClient();
   const status = input.status ?? "draft";
   const stamp = publishStamp(status, input.published_at);
+  if (stamp.status === "published") {
+    await assertPublishReady({
+      coverUrl: input.cover_url,
+      authorId: input.author_id,
+      excerpt: input.excerpt,
+    });
+  }
   for (let attempt = 0; attempt < 6; attempt++) {
     const slug = await ensureUniqueSlug(tenantId, input.slug);
     const { data, error } = await supabase
@@ -455,6 +463,13 @@ export async function updateArticle(
     patch.status !== undefined
       ? publishStamp(nextStatus, current.published_at)
       : {};
+  if (nextStatus === "published") {
+    await assertPublishReady({
+      coverUrl: patch.cover_url !== undefined ? patch.cover_url : current.cover_url,
+      authorId: patch.author_id !== undefined ? patch.author_id : current.author_id,
+      excerpt: patch.excerpt !== undefined ? patch.excerpt : current.excerpt,
+    });
+  }
 
   const { data, error } = await supabase
     .from("articles")
