@@ -5,7 +5,7 @@ import {
   isPublishStatus,
   requireAdminApi,
 } from "@/lib/admin-auth";
-import { assertPublishReady } from "@/lib/cover-image";
+import { assertPublishReady } from "@/lib/publish-ready";
 import { deleteArticle, getArticle, publishArticle, updateArticle } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
@@ -20,11 +20,18 @@ export async function GET(
   const ctx = await requireAdminApi();
   if (ctx instanceof NextResponse) return ctx;
   const { id: articleId } = await params;
-  const article = await getArticle(ctx.tenantId, articleId);
-  if (!article) {
-    return NextResponse.json({ message: "Bulunamadı." }, { status: 404 });
+  try {
+    const article = await getArticle(ctx.tenantId, articleId);
+    if (!article) {
+      return NextResponse.json({ message: "Bulunamadı." }, { status: 404 });
+    }
+    return NextResponse.json(article);
+  } catch (err) {
+    return NextResponse.json(
+      { message: err instanceof Error ? err.message : "Haber alınamadı." },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(article);
 }
 
 export async function PATCH(

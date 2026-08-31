@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { coverWidthError, DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
+import { assertPublishReady } from "@/lib/publish-ready";
 import {
   coverSizeFromUrl,
   INDEX_ROBOTS,
@@ -21,6 +22,20 @@ describe("Keşfet yayın eşiği", () => {
   it("yayında kapak + yazar + özet ister", () => {
     assert.equal(publishFieldErrors({ coverUrl: "https://x/a.webp", authorId: "1", excerpt: "özet" }).length, 0);
     assert.ok(publishFieldErrors({}).length >= 3);
+    assert.doesNotThrow(() =>
+      assertPublishReady({
+        coverUrl: "https://x/a.webp?w=1600&h=900",
+        authorId: "1",
+        excerpt: "özet",
+      })
+    );
+    assert.throws(() =>
+      assertPublishReady({
+        coverUrl: "https://x/a.webp",
+        authorId: "1",
+        excerpt: "özet",
+      })
+    );
   });
 
   it("index robots Keşfet büyük önizleme taşır", () => {

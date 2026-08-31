@@ -5,7 +5,7 @@ import {
   isPublishStatus,
   requireAdminApi,
 } from "@/lib/admin-auth";
-import { assertPublishReady } from "@/lib/cover-image";
+import { assertPublishReady } from "@/lib/publish-ready";
 import { createArticle, getArticle, listArticles } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
@@ -16,8 +16,15 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await requireAdminApi();
   if (ctx instanceof NextResponse) return ctx;
-  const data = await listArticles(ctx.tenantId);
-  return NextResponse.json(data);
+  try {
+    const data = await listArticles(ctx.tenantId);
+    return NextResponse.json(data);
+  } catch (err) {
+    return NextResponse.json(
+      { message: err instanceof Error ? err.message : "Haberler alınamadı." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {

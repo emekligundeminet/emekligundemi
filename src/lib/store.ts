@@ -302,11 +302,19 @@ export async function deleteSource(tenantId: string, id: string) {
 
 export async function listArticles(tenantId: string) {
   const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
+  const joined = `${ARTICLE_LIST_COLS}, categories ( name, slug )`;
+  let { data, error } = await supabase
     .from("articles")
-    .select(`${ARTICLE_LIST_COLS}, categories ( name, slug )`)
+    .select(joined)
     .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });
+  if (error && /evergreen/.test(error.message)) {
+    ({ data, error } = await supabase
+      .from("articles")
+      .select(joined.replace(",evergreen", ""))
+      .eq("tenant_id", tenantId)
+      .order("updated_at", { ascending: false }));
+  }
   if (error) fail(error);
   return ((data ?? []) as unknown as ArticleRow[]).map(mapArticle);
 }
