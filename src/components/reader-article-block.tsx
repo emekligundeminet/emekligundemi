@@ -81,21 +81,6 @@ export function ReaderArticleBlock({
         <ArticleToolbar title={article.title} url={articleUrl} />
       </div>
 
-      {article.source_name ? (
-        <div className="mt-2 flex items-center gap-2.5">
-          {article.source_logo_url ? (
-            <Image
-              src={article.source_logo_url}
-              alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : null}
-          <span className="text-[15px] font-normal text-neutral-500">{article.source_name}</span>
-        </div>
-      ) : null}
-
       {article.cover_url ? (
         <figure className="mt-6">
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-200">
@@ -127,6 +112,21 @@ export function ReaderArticleBlock({
       />
 
       <ArticleSources kaynaklar={article.kaynaklar} />
+
+      {article.source_name ? (
+        <div className="mt-5 flex items-center gap-2">
+          {article.source_logo_url ? (
+            <Image
+              src={article.source_logo_url}
+              alt=""
+              width={64}
+              height={20}
+              className="h-4 w-auto max-w-16 object-contain object-left"
+            />
+          ) : null}
+          <span className="text-[13px] italic text-neutral-500">{article.source_name}</span>
+        </div>
+      ) : null}
 
       <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
         <p className="text-[15px] font-semibold leading-snug text-neutral-800">
