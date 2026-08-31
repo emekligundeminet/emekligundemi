@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: `${HOME_TITLE} | ${TITLE_SUFFIX}`,
   description: SITE_TAGLINE,
   robots: INDEX_ROBOTS,
+  verification: {
+    google: "T_-k_81o_g8yJF2L3b5nmBVrAeJe6e9LvPP8th69HoE",
+  },
   alternates: { types: rssAlternate() },
   themeColor: "#F71515",
   icons: {
