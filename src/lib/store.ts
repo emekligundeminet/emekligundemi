@@ -304,17 +304,21 @@ export async function deleteSource(tenantId: string, id: string) {
 export async function listArticles(tenantId: string) {
   const supabase = createSupabaseAdminClient();
   const joined = `${ARTICLE_LIST_COLS}, categories ( name, slug )`;
-  let { data, error } = await supabase
+  const first = await supabase
     .from("articles")
     .select(joined)
     .eq("tenant_id", tenantId)
     .order("updated_at", { ascending: false });
+  let data = first.data;
+  let error = first.error;
   if (error && /evergreen/.test(error.message)) {
-    ({ data, error } = await supabase
+    const fallback = await supabase
       .from("articles")
-      .select(joined.replace(",evergreen", ""))
+      .select(`${ARTICLE_LIST_COLS.replace(",evergreen", "")}, categories ( name, slug )`)
       .eq("tenant_id", tenantId)
-      .order("updated_at", { ascending: false }));
+      .order("updated_at", { ascending: false });
+    data = fallback.data as typeof data;
+    error = fallback.error;
   }
   if (error) fail(error);
   return ((data ?? []) as unknown as ArticleRow[]).map(mapArticle);
@@ -465,7 +469,7 @@ export async function createArticle(tenantId: string, input: ArticleWrite) {
             is_breaking: Boolean(input.is_breaking),
             is_manset: Boolean(input.is_manset),
           })
-          .select(ARTICLE_FULL_COLS.replace(",evergreen", ""))
+          .select(ARTICLE_FULL_COLS.replace(",evergreen", "") as typeof ARTICLE_FULL_COLS)
           .single();
         if (!again.error && again.data) {
           if (stamp.status === "published") await trimMansetSlots(tenantId);
