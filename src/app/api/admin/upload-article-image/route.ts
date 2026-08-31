@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin-auth";
-import {
-  assertUploadCoverWidth,
-  measureSizeFromBuffer,
-  toWebp,
-  webpSize,
-} from "@/lib/cover-image";
+import { assertUploadCoverWidth, measureSizeFromBuffer } from "@/lib/cover-image";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 
 const BUCKET = "article-images";
@@ -47,22 +42,14 @@ export async function POST(request: Request) {
     const clientH = asPositiveInt(formData?.get("height") ?? null);
     const input = Buffer.from(await file.arrayBuffer());
     const header = measureSizeFromBuffer(input);
-    if (!isMark) await assertUploadCoverWidth(input, clientW);
+    if (!isMark) assertUploadCoverWidth(input, clientW);
 
-    let out = input;
-    let contentType = file.type || "image/jpeg";
-    let ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
-    try {
-      out = await toWebp(input, isMark ? 512 : 1920);
-      contentType = "image/webp";
-      ext = "webp";
-    } catch {
-      /* Sharp yoksa tarayıcıdaki JPEG/PNG gider. */
-    }
+    const contentType = file.type || "image/jpeg";
+    const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
 
     const supabase = createSupabaseAdminClient();
     const path = `${ctx.tenantId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, out, {
+    const { error } = await supabase.storage.from(BUCKET).upload(path, input, {
       contentType,
       upsert: true,
     });
@@ -83,9 +70,8 @@ export async function POST(request: Request) {
     }
 
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    const outMeta = await webpSize(out);
-    const width = outMeta.width ?? header?.width ?? clientW ?? undefined;
-    const height = outMeta.height ?? header?.height ?? clientH ?? undefined;
+    const width = header?.width ?? clientW ?? undefined;
+    const height = header?.height ?? clientH ?? undefined;
     const publicUrl = new URL(urlData.publicUrl);
     if (width) publicUrl.searchParams.set("w", String(width));
     if (height) publicUrl.searchParams.set("h", String(height));

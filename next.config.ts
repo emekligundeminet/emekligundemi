@@ -15,7 +15,6 @@ const supabaseHost = supabaseImageHost();
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  serverExternalPackages: ["sharp"],
   async headers() {
     return [
       {
