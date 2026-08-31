@@ -2,9 +2,7 @@ import type { MetadataRoute } from "next";
 import { absolutePath, getSiteMeta } from "@/lib/site-meta";
 import { cachedSitemapData } from "@/lib/cached-public";
 import { articlePath, isGuide, isReservedBlogIndexSlug } from "@/lib/content-type";
-import { authorPath } from "@/lib/author-slug";
 import { sitemapImageUrl } from "@/lib/seo";
-import { getAuthors } from "@/lib/store";
 import { listYayindaYasal } from "@/lib/yasal";
 import { isKurumsalYasalSlug, yasalPath } from "@/types/yasal";
 
@@ -29,9 +27,8 @@ const STATIC_PATHS = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = await getSiteMeta();
   if (!site) return [];
-  const [{ articles, categories }, authors, yasal] = await Promise.all([
+  const [{ articles, categories }, yasal] = await Promise.all([
     cachedSitemapData(site.tenantId),
-    getAuthors(site.tenantId),
     listYayindaYasal(),
   ]);
 
@@ -60,13 +57,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     }));
 
-  const authorEntries: MetadataRoute.Sitemap = authors.map((author) => ({
-    url: absolutePath(site.origin, authorPath(author.name)),
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: 0.4,
-  }));
-
   const articleEntries: MetadataRoute.Sitemap = articles.map((a) => {
     const path = articlePath(a);
     const cover = a.cover_url ? sitemapImageUrl(a.cover_url) : null;
@@ -83,7 +73,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticEntries,
     ...yasalEntries,
     ...categoryEntries,
-    ...authorEntries,
     ...articleEntries,
   ];
 }

@@ -2,7 +2,6 @@ import { ArticleMansetStrip } from "@/components/article-manset-strip";
 import { ArticleViewTracker } from "@/components/article-view-tracker";
 import { NewsRelatedSidebar } from "@/components/news-related-sidebar";
 import { ReaderArticleBlock } from "@/components/reader-article-block";
-import { authorPath } from "@/lib/author-slug";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { HOME_TITLE } from "@/lib/site";
 import { absolutePath, toAbsoluteUrl } from "@/lib/site-meta";
@@ -113,7 +112,6 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
       siteName: site.name,
       logoUrl: site.logoUrl,
       authorName: article.author?.name ?? null,
-      authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
       section: article.category_name,
       wordCount: wordCountFromHtml(article.content_html),
       kaynaklar: article.kaynaklar,

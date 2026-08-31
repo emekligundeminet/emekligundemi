@@ -9,6 +9,7 @@ import { getPublishedArticles } from "@/lib/data/articles";
 import { getAuthorBySlug } from "@/lib/store";
 import { formatNewsDate, staticDocumentTitle, toArticleCard } from "@/lib/site";
 import { IMG_SIZES } from "@/lib/image-sizes";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -24,6 +25,7 @@ export async function yazarMetadata({ tenantId, slug }: Args): Promise<Metadata>
   return {
     title: { absolute: staticDocumentTitle(author.name) },
     description: author.bio?.trim() || `${author.name} yazıları.`,
+    robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: {
       type: "profile",

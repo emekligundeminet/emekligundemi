@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { pickTocItems, stampHeadingIds, type TocItem } from "@/lib/article-toc";
 
 const FALLBACK_W = 16;
 const FALLBACK_H = 9;
@@ -49,5 +50,24 @@ export function prepareArticleHtml(html: string): string {
     }
   });
 
+  stampHeadingIds($);
+
   return $.html();
+}
+
+/** prepareArticleHtml sonrası H2/H3 listesi. Az başlıkta boş. */
+export function articleToc(html: string): TocItem[] {
+  const trimmed = html.trim();
+  if (!trimmed) return [];
+  const $ = cheerio.load(trimmed, undefined, false);
+  const items: TocItem[] = [];
+  $("h2, h3").each((_, el) => {
+    const node = $(el);
+    const id = node.attr("id")?.trim();
+    const text = node.text().replace(/\s+/g, " ").trim();
+    if (!id || !text) return;
+    const tag = el.tagName.toLowerCase();
+    items.push({ id, text, level: tag === "h3" ? 3 : 2 });
+  });
+  return pickTocItems(items);
 }

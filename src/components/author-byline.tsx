@@ -1,9 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
-import { authorPath } from "@/lib/author-slug";
 import { cn } from "@/lib/utils";
 import type { Author } from "@/types/author";
 
+/** Yazıda imza: ad + foto. Profil sayfasına link yok. */
 export function AuthorByline({
   author,
   className,
@@ -11,9 +10,8 @@ export function AuthorByline({
   author: Pick<Author, "name" | "logo_url">;
   className?: string;
 }) {
-  const href = authorPath(author.name);
   return (
-    <Link href={href} className={cn("flex items-center gap-2.5 hover:opacity-90", className)}>
+    <div className={cn("flex items-center gap-2.5", className)}>
       {author.logo_url ? (
         <Image
           src={author.logo_url}
@@ -31,6 +29,6 @@ export function AuthorByline({
         </span>
       )}
       <span className="text-[15px] font-normal text-[#757575]">{author.name}</span>
-    </Link>
+    </div>
   );
 }

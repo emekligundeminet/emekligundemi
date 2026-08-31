@@ -1,14 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArticleSources } from "@/components/article-sources";
+import { ArticleToc } from "@/components/article-toc";
 import { ArticleToolbar } from "@/components/article-toolbar";
 import { AuthorByline } from "@/components/author-byline";
 import { GoogleFollowBar } from "@/components/google-follow-bar";
 import { archivePathFromPublishedAt } from "@/lib/archive";
+import { BLOG_INDEX_PATH, isGuide } from "@/lib/content-type";
 import { CONTACT_EMAIL } from "@/lib/publisher";
-import { formatNewsDateTime, HOME_TITLE } from "@/lib/site";
+import { BLOG_INDEX_TITLE, formatNewsDateTime, HOME_TITLE } from "@/lib/site";
 import { IMG_SIZES } from "@/lib/image-sizes";
-import { prepareArticleHtml } from "@/lib/prepare-article-html";
+import { articleToc, prepareArticleHtml } from "@/lib/prepare-article-html";
 import type { ReaderArticle } from "@/types/reader-article";
 
 type Props = {
@@ -34,6 +36,9 @@ export function ReaderArticleBlock({
     article.updated_at && !sameInstant(article.updated_at, article.published_at)
       ? article.updated_at
       : null;
+  const guide = isGuide(article.type);
+  const prepared = prepareArticleHtml(article.content_html);
+  const toc = guide ? articleToc(prepared) : [];
 
   return (
     <article>
@@ -41,6 +46,16 @@ export function ReaderArticleBlock({
         <Link href="/" className="hover:text-[var(--brand)] hover:underline">
           {HOME_TITLE}
         </Link>
+        {guide ? (
+          <>
+            <span className="px-1.5" aria-hidden>
+              &gt;
+            </span>
+            <Link href={BLOG_INDEX_PATH} className="hover:text-[var(--brand)] hover:underline">
+              {BLOG_INDEX_TITLE}
+            </Link>
+          </>
+        ) : null}
         {article.category_slug && article.category_name ? (
           <>
             <span className="px-1.5" aria-hidden>
@@ -110,11 +125,13 @@ export function ReaderArticleBlock({
         </div>
       ) : null}
 
+      <ArticleToc items={toc} />
+
       <div
         id="haber-govde"
         data-fs="md"
         className="haber-icerik mt-4"
-        dangerouslySetInnerHTML={{ __html: prepareArticleHtml(article.content_html) }}
+        dangerouslySetInnerHTML={{ __html: prepared }}
       />
 
       <ArticleSources kaynaklar={article.kaynaklar} />
@@ -136,7 +153,7 @@ export function ReaderArticleBlock({
 
       <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
         <p className="text-[15px] font-semibold leading-snug text-neutral-800">
-          Bu haberde hata gördünüz mü?
+          {guide ? "Bu yazıda hata gördünüz mü?" : "Bu haberde hata gördünüz mü?"}
         </p>
         <a
           href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Düzeltme: ${article.title}`)}&body=${encodeURIComponent(articleUrl)}`}

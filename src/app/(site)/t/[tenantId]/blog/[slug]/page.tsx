@@ -1,13 +1,14 @@
+import { ArticleMansetStrip } from "@/components/article-manset-strip";
 import { ArticleViewTracker } from "@/components/article-view-tracker";
+import { NewsRelatedSidebar } from "@/components/news-related-sidebar";
 import { ReaderArticleBlock } from "@/components/reader-article-block";
-import { authorPath } from "@/lib/author-slug";
 import { breadcrumbJsonLd, jsonLdScript } from "@/lib/json-ld";
 import { BLOG_INDEX_TITLE, HOME_TITLE } from "@/lib/site";
 import { absolutePath, toAbsoluteUrl } from "@/lib/site-meta";
 import { articleJsonLdByType } from "@/lib/public-article-url";
 import { articleSocialMeta, wordCountFromHtml } from "@/lib/seo";
 import { isGuide } from "@/lib/content-type";
-import { cachedArticle, cachedSiteMeta } from "@/lib/cached-public";
+import { cachedArticle, cachedBlogArticles, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -69,6 +70,28 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
     permanentRedirect(`/${article.slug}`);
   }
 
+  const [published, blogFeed] = await Promise.all([
+    cachedHomeArticles(tenantId),
+    cachedBlogArticles(tenantId, 1),
+  ]);
+
+  const others = blogFeed.articles.filter((a) => a.id !== article.id);
+  const sameCat = others.filter((a) => a.category_slug && a.category_slug === article.category_slug);
+  const related = (sameCat.length >= 2 ? sameCat : others).slice(0, 5);
+
+  const newsOthers = published.filter((a) => a.id !== article.id);
+  const manset = newsOthers.filter((a) => a.is_manset);
+  const mansetCards =
+    manset.length === 0
+      ? newsOthers.slice(0, 4)
+      : [
+          ...manset,
+          ...newsOthers.filter((a) => !manset.some((m) => m.id === a.id)),
+        ].slice(0, 4);
+
+  const host = site.origin.replace(/^https?:\/\//, "").split("/")[0] ?? "";
+  const followHost =
+    host && host !== "localhost" && host !== "127.0.0.1" ? host : undefined;
   const canonical = absolutePath(site.origin, `/blog/${article.slug}`);
   const coverAbs = toAbsoluteUrl(site.origin, article.cover_url);
   const jsonLd = [
@@ -82,7 +105,6 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
       siteName: site.name,
       logoUrl: site.logoUrl,
       authorName: article.author?.name ?? null,
-      authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
       section: BLOG_INDEX_TITLE,
       wordCount: wordCountFromHtml(article.content_html),
       kaynaklar: article.kaynaklar,
@@ -101,12 +123,23 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
-      <ReaderArticleBlock
-        article={article}
-        siteName={site.name}
-        articleUrl={canonical}
-        priorityCover
-      />
+      <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <ReaderArticleBlock
+          article={article}
+          siteName={site.name}
+          articleUrl={canonical}
+          followHost={followHost}
+          priorityCover
+        />
+        <NewsRelatedSidebar
+          articles={related}
+          href="/blog"
+          title="Diğer rehberler"
+          logoSrc={site.logoUrl}
+          className="lg:row-span-2"
+        />
+        <ArticleMansetStrip articles={mansetCards} logoSrc={site.logoUrl} />
+      </div>
     </div>
   );
 }
