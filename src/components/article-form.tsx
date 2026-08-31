@@ -18,6 +18,7 @@ import type { Category } from "@/types/category";
 import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
+import { coverAltWarning } from "@/lib/cover-alt";
 import { DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
 import { slugify } from "@/lib/slugify";
 import { uploadArticleImage } from "@/lib/upload-article-image";
@@ -560,12 +561,24 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
                         className="aspect-video w-full object-cover"
                       />
                     </div>
-                    <Input
-                      value={coverAlt}
-                      onChange={(e) => setCoverAlt(e.target.value)}
-                      placeholder="Alt metni"
-                      className="h-8 text-sm"
-                    />
+                    <div className="space-y-1">
+                      <Input
+                        value={coverAlt}
+                        onChange={(e) => setCoverAlt(e.target.value)}
+                        placeholder="Görseli tarif eden cümle (ör. TBMM Genel Kurulu salonu)"
+                        className="h-8 text-sm"
+                      />
+                      {coverAltWarning(coverAlt) ? (
+                        <p className="text-[11px] leading-snug text-amber-600">
+                          {coverAltWarning(coverAlt)}
+                        </p>
+                      ) : (
+                        <p className="text-[11px] leading-snug text-slate-400">
+                          Alt metni sayfada görünmez; ekran okuyucular ve Google Görseller için.
+                          Boş bırakırsan haber başlığı kullanılır.
+                        </p>
+                      )}
+                    </div>
                     <Button
                       type="button"
                       variant="outline"

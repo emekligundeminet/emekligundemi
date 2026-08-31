@@ -109,9 +109,6 @@ export function ReaderArticleBlock({
               className="object-cover"
             />
           </div>
-          {article.cover_alt ? (
-            <figcaption className="mt-2 text-xs text-neutral-500">{article.cover_alt}</figcaption>
-          ) : null}
         </figure>
       ) : null}
 
