@@ -182,17 +182,28 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
           evergreen,
           type: contentType,
         };
+        const bodyText = JSON.stringify(payload);
+        if (bodyText.length > 3_200_000) {
+          toast.error(
+            "Kayıt çok büyük (yapıştırılmış görsel olabilir). Fotoğrafı Kapak veya editördeki Yükle ile ekleyin."
+          );
+          return;
+        }
         const res = await fetch(
           isEdit ? `/api/admin/articles/${initialData!.id}` : "/api/admin/articles",
           {
             method: isEdit ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: bodyText,
           }
         );
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          toast.error(data.message ?? "Kaydedilemedi.");
+          toast.error(
+            typeof data.message === "string" && data.message
+              ? data.message
+              : `Kaydedilemedi (${res.status}).`
+          );
           return;
         }
         setStatus(nextStatus);

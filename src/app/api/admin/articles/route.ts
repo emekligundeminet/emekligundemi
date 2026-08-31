@@ -28,12 +28,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const ctx = await requireAdminApi();
-  if (ctx instanceof NextResponse) return ctx;
-  const denied = forbidIfCannotWrite(ctx);
-  if (denied) return denied;
+  try {
+    const ctx = await requireAdminApi();
+    if (ctx instanceof NextResponse) return ctx;
+    const denied = forbidIfCannotWrite(ctx);
+    if (denied) return denied;
 
-  const body = (await request.json()) as {
+    const body = (await request.json()) as {
     title?: string;
     slug?: string;
     excerpt?: string | null;
@@ -106,6 +107,12 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { message: err instanceof Error ? err.message : "Hata" },
       { status: 400 }
+    );
+  }
+  } catch (err) {
+    return NextResponse.json(
+      { message: err instanceof Error ? err.message : "Taslak kaydedilemedi." },
+      { status: 500 }
     );
   }
 }

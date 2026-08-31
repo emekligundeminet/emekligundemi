@@ -22,8 +22,9 @@ const CATEGORY_COLS_BASIC = "id,tenant_id,name,slug,sort_order";
 const AUTHOR_COLS = "id,tenant_id,name,logo_url,bio";
 const SOURCE_COLS = "id,tenant_id,name,logo_url";
 
-function fail(error: { message: string } | null): never {
-  throw new Error(error?.message ?? "Supabase hatası.");
+function fail(error: { message?: string; details?: string; hint?: string; code?: string } | null): never {
+  const parts = [error?.message, error?.details, error?.hint, error?.code].filter(Boolean);
+  throw new Error(parts.join(" — ") || "Supabase hatası.");
 }
 
 type JoinedCategory = { name: string; slug: string };
@@ -437,10 +438,44 @@ export async function createArticle(tenantId: string, input: ArticleWrite) {
       .select(ARTICLE_FULL_COLS)
       .single();
     if (!error) {
-      await trimMansetSlots(tenantId);
-      return data as Article;
+      if (stamp.status === "published") await trimMansetSlots(tenantId);
+      return mapArticle(data as unknown as ArticleRow);
     }
-    if (error.code !== "23505") fail(error);
+    if (error.code !== "23505") {
+      if (/evergreen/i.test(error.message ?? "")) {
+        const again = await supabase
+          .from("articles")
+          .insert({
+            tenant_id: tenantId,
+            title: input.title,
+            slug,
+            excerpt: input.excerpt ?? null,
+            content_html: input.content_html ?? "",
+            cover_url: input.cover_url ?? null,
+            cover_alt: input.cover_alt ?? null,
+            category_id: input.category_id ?? null,
+            author_id: input.author_id ?? null,
+            source_id: input.source_id ?? null,
+            type: parseContentType(input.type),
+            status: stamp.status,
+            published_at: stamp.published_at,
+            meta_title: input.meta_title ?? null,
+            meta_description: input.meta_description ?? null,
+            canonical_url: input.canonical_url ?? null,
+            is_breaking: Boolean(input.is_breaking),
+            is_manset: Boolean(input.is_manset),
+          })
+          .select(ARTICLE_FULL_COLS.replace(",evergreen", ""))
+          .single();
+        if (!again.error && again.data) {
+          if (stamp.status === "published") await trimMansetSlots(tenantId);
+          return mapArticle(again.data as unknown as ArticleRow);
+        }
+        if (again.error && again.error.code !== "23505") fail(again.error);
+      } else {
+        fail(error);
+      }
+    }
   }
   fail({ message: "Bu URL kullanımda, tekrar deneyin." });
 }
