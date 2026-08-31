@@ -159,7 +159,12 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
                       : undefined
                   }
                 >
-                  <HomeStoryStrip articles={cards} categories={categories} logoSrc={logoSrc} />
+                  <HomeStoryStrip
+                    articles={cards}
+                    categories={categories}
+                    logoSrc={logoSrc}
+                    priorityFirst={slider.length === 0 && side.length === 0}
+                  />
                 </div>
               ) : null}
 

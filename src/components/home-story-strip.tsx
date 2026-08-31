@@ -9,15 +9,17 @@ type Props = {
   articles: Article[];
   categories: Category[];
   logoSrc?: string | null;
+  /** Manşet yokken şerit sayfanın en üstünde kalır; ilk kapak LCP olur. */
+  priorityFirst?: boolean;
 };
 
 /** Sözcü şeridi: 4 eşit kart. Mobilde kompakt satır, md+ 4 sütun. */
-export function HomeStoryStrip({ articles, categories, logoSrc }: Props) {
+export function HomeStoryStrip({ articles, categories, logoSrc, priorityFirst }: Props) {
   if (articles.length === 0) return null;
 
   return (
     <ul className="grid grid-cols-1 gap-3.5 md:grid-cols-4 md:gap-4">
-        {articles.map((article) => {
+        {articles.map((article, i) => {
           const kicker = categoryName(article, categories);
           return (
             <li key={article.id}>
@@ -29,6 +31,7 @@ export function HomeStoryStrip({ articles, categories, logoSrc }: Props) {
                   src={article.cover_url}
                   alt={article.cover_alt || article.title}
                   sizes={IMG_SIZES.strip4}
+                  priority={priorityFirst && i === 0}
                   logoSrc={logoSrc}
                   className="aspect-[16/9] w-full"
                 />
