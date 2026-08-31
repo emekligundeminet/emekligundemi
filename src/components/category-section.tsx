@@ -49,11 +49,11 @@ export function CategorySection({ category, articles, logoSrc, href, title }: Pr
               className="aspect-[16/9] w-full"
             />
           </Link>
-          <h3 className="mt-3 text-xl font-extrabold leading-snug md:text-2xl">
+          <p className="mt-3 text-xl font-extrabold leading-snug md:text-2xl">
             <Link href={articlePath(lead)} className="hover:text-[var(--brand)]">
               {lead.title}
             </Link>
-          </h3>
+          </p>
           {summary ? (
             <p className="mt-2 line-clamp-3 text-[16px] leading-relaxed text-neutral-600">
               {summary}

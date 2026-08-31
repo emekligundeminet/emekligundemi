@@ -9,11 +9,11 @@ type Props = {
   className?: string;
 };
 
-/** Bölüm şeridi: başlık + ince eğik çubuk + daire ok. H değil. */
+/** Bölüm şeridi: H2 + ince eğik çubuk + daire ok. */
 export function SectionRibbon({ title, href, className }: Props) {
   return (
     <div className={cn("section-ribbon", className)}>
-      <p className="section-ribbon-title">{title}</p>
+      <h2 className="section-ribbon-title">{title}</h2>
       <div className="section-ribbon-bar" aria-hidden />
       {href ? (
         <Link href={href} className="section-ribbon-all" aria-label={`${title} tüm haberler`}>

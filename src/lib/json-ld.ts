@@ -1,5 +1,5 @@
 import { CONTACT_EMAIL, PUBLISHER_NAME, publisherLogoUrl } from "@/lib/publisher";
-import { SITE_NAME, SITE_ORIGIN } from "@/lib/site";
+import { HOME_TITLE, SITE_NAME, SITE_ORIGIN } from "@/lib/site";
 
 export function organizationJsonLd(opts: {
   name: string;
@@ -43,6 +43,7 @@ export function websiteJsonLd(opts: { name: string; origin: string; description?
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: opts.name || SITE_NAME,
+    alternateName: HOME_TITLE,
     url: origin,
     description: opts.description,
     potentialAction: {

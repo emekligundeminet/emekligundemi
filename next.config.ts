@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/publisher-logo.png",
+        destination: "/emekli-haberleri.png",
+        permanent: true,
+      },
+      {
         source: "/haber/:slug",
         destination: "/:slug",
         permanent: true,

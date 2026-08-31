@@ -136,7 +136,7 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
       {org ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: org }} />
       ) : null}
-      <h1 className="sr-only">{site?.name ?? "Haberler"}</h1>
+      <h1 className="sr-only">{HOME_TITLE}</h1>
       {articles.length === 0 ? (
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
           <div className="border border-dashed border-neutral-200 px-6 py-16">

@@ -7,8 +7,8 @@ export const HOSTING_NOTE =
   "Uygulama Vercel üzerinde, veritabanı ve dosya depolama Supabase üzerinde barındırılır.";
 export const CORRECTION_SLA = "5 iş günü";
 
-/** Google News publisher.logo: SVG kabul etmez, en az 112px raster. */
-export const PUBLISHER_LOGO_PATH = "/publisher-logo.png";
+/** Google News publisher.logo: SVG kabul etmez, en az 112px raster (600×160). */
+export const PUBLISHER_LOGO_PATH = "/emekli-haberleri.png";
 
 export function publisherLogoUrl(origin: string) {
   return `${origin.replace(/\/$/, "")}${PUBLISHER_LOGO_PATH}`;
