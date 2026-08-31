@@ -13,7 +13,7 @@ export const CALC_PATHS = [
   "/araclar/emekli-zam-hesaplama",
   "/araclar/emekli-bayram-ikramiyesi",
   "/araclar/alim-gucu-kaybi",
-  "/arac/emekli-maasi-hesaplama",
+  "/araclar/emekli-maasi-hesaplama",
 ] as const;
 
 async function loadParams(grup?: string): Promise<HesapParametre[]> {

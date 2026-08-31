@@ -10,6 +10,8 @@ import {
   RESERVED_CONTENT_SLUGS,
   uniquifySlug,
 } from "@/lib/content-type";
+import { CALC_TOOLS } from "@/lib/calc-tools";
+import { PENSION_TOOL_PATH } from "@/lib/site";
 
 /** Store PATCH: kategori değişince type yazılmaz. */
 function categoryOnlyPatch(category_id: string) {
@@ -128,6 +130,12 @@ describe("articles.type tek karar kaynağı", () => {
     assert.equal(articlePath({ slug: "emekli-zammi", type: "news" }), "/emekli-zammi");
     assert.ok(!articlePath({ slug: "emekli-zammi", type: "news" }).includes("/t/"));
     assert.ok(!articlePath({ slug: "rehber", type: "guide" }).includes("/t/"));
+  });
+
+  it("hesaplama araçları tek prefix /araclar/", () => {
+    assert.equal(PENSION_TOOL_PATH, "/araclar/emekli-maasi-hesaplama");
+    assert.ok(CALC_TOOLS.every((t) => t.path.startsWith("/araclar/")));
+    assert.ok(!CALC_TOOLS.some((t) => t.path.startsWith("/arac/")));
   });
 
   it("/kategori/blog yönü reserved index slug; type değil", () => {

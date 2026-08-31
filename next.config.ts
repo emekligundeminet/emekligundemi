@@ -54,7 +54,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/emekli-maasi-hesaplama",
-        destination: "/arac/emekli-maasi-hesaplama",
+        destination: "/araclar/emekli-maasi-hesaplama",
+        permanent: true,
+      },
+      {
+        source: "/arac/:path*",
+        destination: "/araclar/:path*",
         permanent: true,
       },
       {

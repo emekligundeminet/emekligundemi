@@ -37,7 +37,7 @@ export const SITE_ORIGIN = (
 
 export { BLOG_INDEX_PATH, articlePath } from "@/lib/content-type";
 export const BLOG_INDEX_TITLE = "Emekli Rehberi";
-export const PENSION_TOOL_PATH = "/arac/emekli-maasi-hesaplama";
+export const PENSION_TOOL_PATH = "/araclar/emekli-maasi-hesaplama";
 
 export function articleCanonicalUrl(article: { slug: string; type?: string | null }) {
   return `${SITE_ORIGIN}${articlePath(article)}`;

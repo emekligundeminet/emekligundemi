@@ -11,7 +11,7 @@ export const revalidate = 300;
 const STATIC_PATHS = [
   "/",
   "/blog",
-  "/arac/emekli-maasi-hesaplama",
+  "/araclar/emekli-maasi-hesaplama",
   "/araclar/emekli-zam-hesaplama",
   "/araclar/emekli-bayram-ikramiyesi",
   "/araclar/alim-gucu-kaybi",
