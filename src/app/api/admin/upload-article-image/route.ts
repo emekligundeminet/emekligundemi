@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin-auth";
 import { assertUploadCoverWidth, measureSizeFromBuffer } from "@/lib/cover-image";
+import { slugify } from "@/lib/slugify";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 
 const BUCKET = "article-images";
@@ -14,6 +15,12 @@ function asPositiveInt(raw: FormDataEntryValue | null): number | null {
   if (typeof raw !== "string") return null;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
+}
+
+/** Google Görseller açıklayıcı dosya adını kullanır; slug'dan türet. */
+function fileStem(raw: FormDataEntryValue | null): string {
+  if (typeof raw !== "string" || !raw.trim()) return "gorsel";
+  return slugify(raw).slice(0, 60).replace(/-+$/, "") || "gorsel";
 }
 
 export async function POST(request: Request) {
@@ -48,7 +55,9 @@ export async function POST(request: Request) {
     const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
 
     const supabase = createSupabaseAdminClient();
-    const path = `${ctx.tenantId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const stem = fileStem(formData?.get("name") ?? null);
+    const unique = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const path = `${ctx.tenantId}/${stem}-${unique}.${ext}`;
     const { error } = await supabase.storage.from(BUCKET).upload(path, input, {
       contentType,
       upsert: true,

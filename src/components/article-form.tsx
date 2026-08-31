@@ -122,7 +122,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
       }
       setUploading(true);
       try {
-        const url = await uploadArticleImage(file);
+        const url = await uploadArticleImage(file, "cover", slug || title);
         setCoverUrl(url);
         toast.success("Görsel yüklendi.");
       } catch (err) {
@@ -132,7 +132,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
         e.target.value = "";
       }
     },
-    []
+    [slug, title]
   );
 
   const save = useCallback(

@@ -40,13 +40,16 @@ async function shrinkImageFile(
 
 export async function uploadArticleImage(
   file: File,
-  kind: "cover" | "mark" = "cover"
+  kind: "cover" | "mark" = "cover",
+  /** Dosya adı bundan türetilir (haber slug'ı veya başlık). */
+  name?: string
 ): Promise<string> {
   const prepared = await shrinkImageFile(file, kind === "mark" ? 512 : 1920);
   const form = new FormData();
   form.append("file", prepared.file);
   if (prepared.width) form.append("width", String(prepared.width));
   if (prepared.height) form.append("height", String(prepared.height));
+  if (name?.trim()) form.append("name", name.trim());
   const qs = kind === "mark" ? "?kind=mark" : "";
   const res = await fetch(`/api/admin/upload-article-image${qs}`, {
     method: "POST",
