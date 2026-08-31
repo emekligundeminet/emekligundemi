@@ -9,6 +9,7 @@ import { assertPublishReady } from "@/lib/publish-ready";
 import { deleteArticle, getArticle, publishArticle, updateArticle } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
+import { parseKaynaklar } from "@/lib/kaynak";
 import type { ArticleStatus } from "@/types/article";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,7 @@ export async function PATCH(
     is_breaking?: boolean;
     is_manset?: boolean;
     evergreen?: boolean;
+    kaynaklar?: unknown;
     type?: string;
     publish?: boolean;
   };
@@ -115,6 +117,7 @@ export async function PATCH(
       ...(body.is_breaking !== undefined ? { is_breaking: Boolean(body.is_breaking) } : {}),
       ...(body.is_manset !== undefined ? { is_manset: Boolean(body.is_manset) } : {}),
       ...(body.evergreen !== undefined ? { evergreen: Boolean(body.evergreen) } : {}),
+      ...(body.kaynaklar !== undefined ? { kaynaklar: parseKaynaklar(body.kaynaklar) } : {}),
       ...(body.type !== undefined ? { type: parseContentType(body.type) } : {}),
     });
     const after = await getArticle(ctx.tenantId, articleId);

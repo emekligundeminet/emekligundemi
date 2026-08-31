@@ -2,6 +2,7 @@ import { jsonLdSchemaType } from "@/lib/content-type";
 import { publisherLogoUrl } from "@/lib/publisher";
 import { SITE_ORIGIN } from "@/lib/site";
 import { coverSizeFromUrl, toIso8601 } from "@/lib/seo";
+import type { Kaynak } from "@/lib/kaynak";
 
 function originOf(canonical: string) {
   try {
@@ -61,6 +62,7 @@ export function newsArticleJsonLd(opts: {
   authorUrl?: string | null;
   section?: string | null;
   wordCount?: number;
+  kaynaklar?: Kaynak[];
 }) {
   const logo = publisherLogoUrl(originOf(opts.canonical));
   return {
@@ -98,6 +100,13 @@ export function newsArticleJsonLd(opts: {
     },
     copyrightHolder: { "@type": "NewsMediaOrganization", name: opts.siteName },
     spatialCoverage: { "@type": "Country", name: "TR" },
+    citation: opts.kaynaklar?.length
+      ? opts.kaynaklar.map((k) => ({
+          "@type": "CreativeWork",
+          name: k.etiket,
+          url: k.url,
+        }))
+      : undefined,
   };
 }
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArticleSources } from "@/components/article-sources";
 import { ArticleToolbar } from "@/components/article-toolbar";
 import { AuthorByline } from "@/components/author-byline";
 import { GoogleFollowBar } from "@/components/google-follow-bar";
@@ -124,6 +125,8 @@ export function ReaderArticleBlock({
         className="haber-icerik mt-4"
         dangerouslySetInnerHTML={{ __html: prepareArticleHtml(article.content_html) }}
       />
+
+      <ArticleSources kaynaklar={article.kaynaklar} />
 
       <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
         <p className="text-[15px] font-semibold leading-snug text-neutral-800">

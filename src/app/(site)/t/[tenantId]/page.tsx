@@ -3,6 +3,7 @@ import { CategorySection } from "@/components/category-section";
 import { HomeHero } from "@/components/home-hero";
 import { HomeStoryStrip } from "@/components/home-story-strip";
 import { MostRead } from "@/components/most-read";
+import { SON_DAKIKA_SLOTS } from "@/lib/showcase-slots";
 import { AdSlot } from "@/components/ad-slot";
 import { articlePath, isReservedBlogIndexSlug } from "@/lib/content-type";
 import { itemListJsonLd, jsonLdScript, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
@@ -82,7 +83,13 @@ export default async function HomePage({ params }: { params: Promise<Params> }) 
   const logoSrc = site?.logoUrl ?? null;
   const { slider, cards, side } = splitHomeArticles(articles);
   const usedIds = new Set([...slider, ...cards, ...side].map((a) => a.id));
-  const breaking = articles.filter((a) => a.is_breaking).slice(0, 5);
+  const breaking = articles
+    .filter((a) => a.is_breaking)
+    .sort(
+      (a, b) =>
+        (b.published_at ?? "").localeCompare(a.published_at ?? "") || b.id.localeCompare(a.id)
+    )
+    .slice(0, SON_DAKIKA_SLOTS);
 
   /** Üst bloklarla çakışmasın; kategori boşalırsa o kategorinin haberini yine göster. */
   const categoryBlocks: { kat: (typeof categories)[number]; items: Article[] }[] = [];

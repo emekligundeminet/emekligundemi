@@ -9,6 +9,7 @@ import { assertPublishReady } from "@/lib/publish-ready";
 import { createArticle, getArticle, listArticles } from "@/lib/store";
 import { revalidateTenantContent } from "@/lib/revalidate-tenant";
 import { parseContentType } from "@/lib/content-type";
+import { parseKaynaklar } from "@/lib/kaynak";
 import type { ArticleStatus } from "@/types/article";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
     is_breaking?: boolean;
     is_manset?: boolean;
     evergreen?: boolean;
+    kaynaklar?: unknown;
     type?: string;
   };
   if (!body.title || !body.slug) {
@@ -92,6 +94,7 @@ export async function POST(request: Request) {
       is_breaking: Boolean(body.is_breaking),
       is_manset: Boolean(body.is_manset),
       evergreen: Boolean(body.evergreen),
+      kaynaklar: parseKaynaklar(body.kaynaklar),
       type: parseContentType(body.type),
     });
     if (article.status === "published") {

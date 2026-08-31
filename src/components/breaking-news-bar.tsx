@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { articlePath } from "@/lib/site";
+import { SON_DAKIKA_SLOTS } from "@/lib/showcase-slots";
 import type { Article } from "@/types/article";
 
 const ROTATE_MS = 4500;
 
 /** Tam genişlik --brand şerit. Haber yoksa yok. */
 export function BreakingNewsBar({ articles }: { articles: Article[] }) {
-  const items = articles.slice(0, 5);
+  const items = articles.slice(0, SON_DAKIKA_SLOTS);
   const [index, setIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
 

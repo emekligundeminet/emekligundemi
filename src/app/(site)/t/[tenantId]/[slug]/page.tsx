@@ -116,6 +116,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
       authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
       section: article.category_name,
       wordCount: wordCountFromHtml(article.content_html),
+      kaynaklar: article.kaynaklar,
     }),
     breadcrumbJsonLd(site.origin, crumbs),
   ];

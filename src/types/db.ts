@@ -216,6 +216,7 @@ export type Database = {
           is_breaking: boolean;
           is_manset: boolean;
           evergreen: boolean;
+          kaynaklar: Json;
           created_at: string;
           updated_at: string;
         };
@@ -241,6 +242,7 @@ export type Database = {
           is_breaking?: boolean;
           is_manset?: boolean;
           evergreen?: boolean;
+          kaynaklar?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -266,6 +268,7 @@ export type Database = {
           is_breaking?: boolean;
           is_manset?: boolean;
           evergreen?: boolean;
+          kaynaklar?: Json;
           created_at?: string;
           updated_at?: string;
         };

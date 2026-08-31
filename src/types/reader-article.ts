@@ -1,4 +1,5 @@
 import type { ContentType } from "@/lib/content-type";
+import type { Kaynak } from "@/lib/kaynak";
 
 export type ReaderArticle = {
   id: string;
@@ -19,4 +20,5 @@ export type ReaderArticle = {
   meta_title: string | null;
   meta_description: string | null;
   canonical_path: string;
+  kaynaklar: Kaynak[];
 };

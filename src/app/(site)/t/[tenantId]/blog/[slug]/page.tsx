@@ -85,6 +85,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
       authorUrl: article.author ? `${site.origin}${authorPath(article.author.name)}` : null,
       section: BLOG_INDEX_TITLE,
       wordCount: wordCountFromHtml(article.content_html),
+      kaynaklar: article.kaynaklar,
     }),
     breadcrumbJsonLd(site.origin, [
       { name: HOME_TITLE, path: "/" },

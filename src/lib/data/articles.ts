@@ -1,11 +1,12 @@
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
+import { parseKaynaklar } from "@/lib/kaynak";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import type { ReaderArticle } from "@/types/reader-article";
 import type { Article } from "@/types/article";
 import type { Category } from "@/types/category";
 
 const LIST_COLS =
-  "id,tenant_id,slug,title,excerpt,cover_url,cover_alt,category_id,author_id,source_id,type,status,published_at,meta_title,meta_description,canonical_url,view_count,is_breaking,is_manset,created_at,updated_at";
+  "id,tenant_id,slug,title,excerpt,cover_url,cover_alt,category_id,author_id,source_id,type,status,published_at,meta_title,meta_description,canonical_url,view_count,is_breaking,is_manset,kaynaklar,created_at,updated_at";
 
 const READER_SELECT = `
   ${LIST_COLS},
@@ -64,6 +65,7 @@ function mapList(row: Record<string, unknown>): Article {
     is_breaking: Boolean(row.is_breaking),
     is_manset: Boolean(row.is_manset),
     evergreen: Boolean(row.evergreen),
+    kaynaklar: parseKaynaklar(row.kaynaklar),
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
     category_name: cat?.name ?? null,
@@ -98,6 +100,7 @@ function toReader(row: Record<string, unknown>): ReaderArticle {
     meta_title: (row.meta_title as string | null) ?? null,
     meta_description: (row.meta_description as string | null) ?? null,
     canonical_path: articlePath({ slug: row.slug as string, type: parseContentType(row.type) }),
+    kaynaklar: parseKaynaklar(row.kaynaklar),
   };
 }
 

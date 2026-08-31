@@ -1,4 +1,5 @@
 import type { ContentType } from "@/lib/content-type";
+import type { Kaynak } from "@/lib/kaynak";
 
 export type ArticleStatus = "draft" | "review" | "published";
 export type { ContentType };
@@ -25,6 +26,7 @@ export type Article = {
   is_breaking: boolean;
   is_manset: boolean;
   evergreen: boolean;
+  kaynaklar: Kaynak[];
   created_at: string;
   updated_at: string;
   category_name?: string | null;

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/content-type.test.ts src/lib/hesap-formulas.test.ts src/lib/feed-page.test.ts src/lib/discover.test.ts src/lib/tenant-rewrite.test.ts src/lib/image-headers.test.ts src/lib/sitemap-image.test.ts src/lib/cover-alt.test.ts",
+    "test": "tsx --test src/lib/content-type.test.ts src/lib/hesap-formulas.test.ts src/lib/feed-page.test.ts src/lib/discover.test.ts src/lib/tenant-rewrite.test.ts src/lib/image-headers.test.ts src/lib/sitemap-image.test.ts src/lib/cover-alt.test.ts src/lib/kaynak.test.ts",
     "rss": "node scripts/rss.js"
   },
   "dependencies": {

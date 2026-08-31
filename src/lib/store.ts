@@ -9,11 +9,13 @@ import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
 import { articlePath, parseContentType, uniquifySlug } from "@/lib/content-type";
 import { authorSlug } from "@/lib/author-slug";
+import { parseKaynaklar, type Kaynak } from "@/lib/kaynak";
+import { MANSET_SLOTS, SON_DAKIKA_SLOTS } from "@/lib/showcase-slots";
 import { CATEGORY_NAV_ORDER } from "@/lib/site";
 import type { ContentType } from "@/lib/content-type";
 
 const ARTICLE_LIST_COLS =
-  "id,tenant_id,slug,title,excerpt,cover_url,cover_alt,category_id,author_id,source_id,type,status,published_at,meta_title,meta_description,canonical_url,view_count,is_breaking,is_manset,evergreen,created_at,updated_at";
+  "id,tenant_id,slug,title,excerpt,cover_url,cover_alt,category_id,author_id,source_id,type,status,published_at,meta_title,meta_description,canonical_url,view_count,is_breaking,is_manset,evergreen,kaynaklar,created_at,updated_at";
 
 const ARTICLE_FULL_COLS = `${ARTICLE_LIST_COLS},content_html`;
 
@@ -57,6 +59,7 @@ function mapArticle(row: ArticleRow): Article {
     is_breaking: Boolean(row.is_breaking),
     is_manset: Boolean(row.is_manset),
     evergreen: Boolean(row.evergreen),
+    kaynaklar: parseKaynaklar(row.kaynaklar),
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
     category_name: cat?.name ?? null,
@@ -374,6 +377,7 @@ type ArticleWrite = {
   is_breaking?: boolean;
   is_manset?: boolean;
   evergreen?: boolean;
+  kaynaklar?: Kaynak[];
   type?: ContentType;
 };
 
@@ -387,8 +391,15 @@ function publishStamp(status: ArticleStatus, existingPublishedAt?: string | null
   };
 }
 
-/** Yayınlanmış manşet 4'ü aşarsa en eski tarihli tik kalkar. */
-async function trimMansetSlots(tenantId: string) {
+/**
+ * Sabit slotlu vitrinler: kapasite aşılırsa en eski tarihli tik kendiliğinden
+ * kalkar. Editör eski haberi elle kaldırmak zorunda değil.
+ */
+async function trimShowcaseSlots(
+  tenantId: string,
+  column: "is_manset" | "is_breaking",
+  slots: number
+) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("articles")
@@ -396,18 +407,23 @@ async function trimMansetSlots(tenantId: string) {
     .eq("tenant_id", tenantId)
     .eq("status", "published")
     .eq("type", "news")
-    .eq("is_manset", true)
+    .eq(column, true)
     .order("published_at", { ascending: false })
     .order("id", { ascending: false });
   if (error) fail(error);
-  const extra = (data ?? []).slice(4).map((row) => row.id as string);
+  const extra = (data ?? []).slice(slots).map((row) => row.id as string);
   if (extra.length === 0) return;
   const { error: upErr } = await supabase
     .from("articles")
-    .update({ is_manset: false })
+    .update({ [column]: false })
     .eq("tenant_id", tenantId)
     .in("id", extra);
   if (upErr) fail(upErr);
+}
+
+async function trimShowcases(tenantId: string) {
+  await trimShowcaseSlots(tenantId, "is_manset", MANSET_SLOTS);
+  await trimShowcaseSlots(tenantId, "is_breaking", SON_DAKIKA_SLOTS);
 }
 
 export async function createArticle(tenantId: string, input: ArticleWrite) {
@@ -438,11 +454,12 @@ export async function createArticle(tenantId: string, input: ArticleWrite) {
         is_breaking: Boolean(input.is_breaking),
         is_manset: Boolean(input.is_manset),
         evergreen: Boolean(input.evergreen),
+        kaynaklar: parseKaynaklar(input.kaynaklar),
       })
       .select(ARTICLE_FULL_COLS)
       .single();
     if (!error) {
-      if (stamp.status === "published") await trimMansetSlots(tenantId);
+      if (stamp.status === "published") await trimShowcases(tenantId);
       return mapArticle(data as unknown as ArticleRow);
     }
     if (error.code !== "23505") {
@@ -472,7 +489,7 @@ export async function createArticle(tenantId: string, input: ArticleWrite) {
           .select(ARTICLE_FULL_COLS.replace(",evergreen", "") as typeof ARTICLE_FULL_COLS)
           .single();
         if (!again.error && again.data) {
-          if (stamp.status === "published") await trimMansetSlots(tenantId);
+          if (stamp.status === "published") await trimShowcases(tenantId);
           return mapArticle(again.data as unknown as ArticleRow);
         }
         if (again.error && again.error.code !== "23505") fail(again.error);
@@ -523,6 +540,7 @@ export async function updateArticle(
       ...(patch.is_breaking !== undefined ? { is_breaking: Boolean(patch.is_breaking) } : {}),
       ...(patch.is_manset !== undefined ? { is_manset: Boolean(patch.is_manset) } : {}),
       ...(patch.evergreen !== undefined ? { evergreen: Boolean(patch.evergreen) } : {}),
+      ...(patch.kaynaklar !== undefined ? { kaynaklar: parseKaynaklar(patch.kaynaklar) } : {}),
       ...(patch.type !== undefined ? { type: parseContentType(patch.type) } : {}),
     })
     .eq("id", id)
@@ -530,7 +548,7 @@ export async function updateArticle(
     .select(ARTICLE_FULL_COLS)
     .single();
   if (error) fail(error);
-  await trimMansetSlots(tenantId);
+  await trimShowcases(tenantId);
   return data as Article;
 }
 

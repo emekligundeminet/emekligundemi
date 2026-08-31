@@ -19,6 +19,8 @@ import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
 import { coverAltWarning } from "@/lib/cover-alt";
+import { ArticleSourcesEditor } from "@/components/article-sources-editor";
+import type { Kaynak } from "@/lib/kaynak";
 import { DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
 import { slugify } from "@/lib/slugify";
 import { uploadArticleImage } from "@/lib/upload-article-image";
@@ -58,6 +60,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
   const [canonicalUrl, setCanonicalUrl] = useState(initialData?.canonical_url ?? "");
   const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.cover_url ?? null);
   const [coverAlt, setCoverAlt] = useState(initialData?.cover_alt ?? "");
+  const [kaynaklar, setKaynaklar] = useState<Kaynak[]>(initialData?.kaynaklar ?? []);
   const [slugLocked, setSlugLocked] = useState(!!initialData?.slug);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -175,6 +178,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
           canonical_url: canonicalUrl.trim() || null,
           cover_url: coverUrl,
           cover_alt: coverAlt.trim() || null,
+          kaynaklar,
           author_id: authorId || null,
           source_id: sourceId || null,
           status: nextStatus,
@@ -244,6 +248,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
       metaDescription,
       coverUrl,
       coverAlt,
+      kaynaklar,
       canonicalUrl,
       authorId,
       sourceId,
@@ -299,6 +304,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
               categoryId={categoryId}
             />
           </div>
+          <ArticleSourcesEditor value={kaynaklar} onChange={setKaynaklar} />
         </div>
 
         <aside className="order-1 flex flex-col gap-4 lg:sticky lg:top-4 lg:order-2 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
@@ -476,7 +482,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
               <span>
                 <span className="block text-sm font-medium text-slate-700">Son dakika</span>
                 <span className="mt-0.5 block text-xs text-slate-500">
-                  İşaretlenirse anasayfa son dakika bandında görünür.
+                  Anasayfa bandındaki 3 haber. 4. tikte en eski tarihli son dakika düşer.
                 </span>
               </span>
             </label>
