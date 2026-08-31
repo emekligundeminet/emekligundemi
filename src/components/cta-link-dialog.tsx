@@ -18,8 +18,16 @@ type Target = {
   category_name?: string | null;
 };
 
-const KICKER_REHBER = "İlgili rehber";
-const KICKER_ARAC = "Hesaplama aracı";
+const KICKER_REHBER = "Bunu da inceleyebilirsiniz";
+const KICKER_ARAC = "Kendi maaşınızı hesaplayabilirsiniz";
+
+const KICKER_HAZIR = [
+  "Bunu da inceleyebilirsiniz",
+  "İlginizi çekebilir",
+  "Ayrıntılar için",
+  "Kendi maaşınızı hesaplayabilirsiniz",
+  "Adım adım anlattık",
+];
 
 function matches(title: string, q: string) {
   if (!q) return true;
@@ -133,15 +141,29 @@ export function CtaLinkDialog({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-600">
-              Üst etiket (kutunun küçük başlığı)
-            </label>
+            <label className="text-xs font-medium text-slate-600">Yönlendirme cümlesi</label>
             <Input
               value={kicker}
               onChange={(e) => setKicker(e.target.value)}
               placeholder={KICKER_REHBER}
               className="h-9"
             />
+            <div className="flex flex-wrap gap-1">
+              {KICKER_HAZIR.map((hazir) => (
+                <button
+                  key={hazir}
+                  type="button"
+                  onClick={() => setKicker(hazir)}
+                  className={`rounded-full border px-2 py-0.5 text-[11px] ${
+                    kicker === hazir
+                      ? "border-slate-800 bg-slate-800 text-white"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {hazir}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -158,7 +180,7 @@ export function CtaLinkDialog({
 
           {picked ? (
             <div className="rounded-md border border-slate-200 bg-white p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-[13px] font-medium text-slate-500">
                 {kicker || KICKER_REHBER}
               </p>
               <p className="mt-0.5 text-sm font-bold text-slate-800">

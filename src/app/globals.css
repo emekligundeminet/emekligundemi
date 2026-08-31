@@ -189,11 +189,10 @@
 .ic-link-cta::before {
   content: attr(data-kicker);
   display: block;
-  margin-bottom: 0.15rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
   color: #6b7280;
 }
 .haber-icerik .ic-link-cta a,

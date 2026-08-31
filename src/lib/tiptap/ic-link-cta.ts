@@ -1,5 +1,7 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 
+const VARSAYILAN_KICKER = "Bunu da inceleyebilirsiniz";
+
 export type IcLinkCtaAttrs = {
   href: string;
   anchor: string;
@@ -29,7 +31,7 @@ export const IcLinkCta = Node.create({
     return {
       href: { default: "" },
       anchor: { default: "" },
-      kicker: { default: "İlgili rehber" },
+      kicker: { default: VARSAYILAN_KICKER },
     };
   },
 
@@ -43,7 +45,7 @@ export const IcLinkCta = Node.create({
           return {
             href: link?.getAttribute("href") ?? "",
             anchor: link?.textContent?.trim() ?? "",
-            kicker: node.getAttribute("data-kicker") ?? "İlgili rehber",
+            kicker: node.getAttribute("data-kicker") ?? VARSAYILAN_KICKER,
           };
         },
       },
@@ -55,7 +57,7 @@ export const IcLinkCta = Node.create({
       "div",
       mergeAttributes({
         "data-ic-cta": "",
-        "data-kicker": node.attrs.kicker || "İlgili rehber",
+        "data-kicker": node.attrs.kicker || VARSAYILAN_KICKER,
         class: "ic-link-cta",
       }),
       ["a", { href: node.attrs.href }, node.attrs.anchor],
