@@ -1,15 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { ArticleSources } from "@/components/article-sources";
 import { ArticleToc } from "@/components/article-toc";
 import { ArticleToolbar } from "@/components/article-toolbar";
 import { AuthorByline } from "@/components/author-byline";
+import { CoverMedia } from "@/components/cover-media";
 import { GoogleFollowBar } from "@/components/google-follow-bar";
 import { archivePathFromPublishedAt } from "@/lib/archive";
 import { BLOG_INDEX_PATH, isGuide } from "@/lib/content-type";
 import { CONTACT_EMAIL } from "@/lib/publisher";
 import { BLOG_INDEX_TITLE, formatNewsDateTime, HOME_TITLE } from "@/lib/site";
-import { IMG_SIZES } from "@/lib/image-sizes";
 import { articleToc, prepareArticleHtml } from "@/lib/prepare-article-html";
 import type { ReaderArticle } from "@/types/reader-article";
 
@@ -39,6 +40,10 @@ export function ReaderArticleBlock({
   const guide = isGuide(article.type);
   const prepared = prepareArticleHtml(article.content_html);
   const toc = guide ? articleToc(prepared) : [];
+
+  if (priorityCover && article.cover_url) {
+    preload(article.cover_url, { as: "image", fetchPriority: "high" });
+  }
 
   return (
     <article>
@@ -104,18 +109,13 @@ export function ReaderArticleBlock({
 
       {article.cover_url ? (
         <figure className="mt-6">
-          <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-200">
-            <Image
-              src={article.cover_url}
-              alt={article.cover_alt || article.title}
-              fill
-              priority={priorityCover}
-              fetchPriority={priorityCover ? "high" : "auto"}
-              loading={priorityCover ? "eager" : "lazy"}
-              sizes={IMG_SIZES.lcp}
-              className="object-cover"
-            />
-          </div>
+          <CoverMedia
+            src={article.cover_url}
+            alt={article.cover_alt || article.title}
+            sizes="(max-width: 768px) 100vw, 700px"
+            priority={priorityCover}
+            className="aspect-[16/9] w-full bg-neutral-200"
+          />
         </figure>
       ) : null}
 

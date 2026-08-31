@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 
+/** Yalnızca roman preload: italic LCP kapağıyla bant yarışıyordu. */
 export const figtree = localFont({
   src: [
     {
@@ -7,13 +8,9 @@ export const figtree = localFont({
       weight: "300 900",
       style: "normal",
     },
-    {
-      path: "../../public/fonts/Figtree-Italic-VariableFont_wght.woff2",
-      weight: "300 900",
-      style: "italic",
-    },
   ],
   variable: "--font-figtree",
   display: "swap",
   preload: true,
+  adjustFontFallback: "Arial",
 });

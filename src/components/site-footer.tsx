@@ -70,6 +70,7 @@ export function SiteFooter({
             variant="white"
             siteName={siteName}
             className="h-9 w-auto md:h-11"
+            loading="lazy"
           />
         </Link>
 

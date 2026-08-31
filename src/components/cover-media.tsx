@@ -5,25 +5,38 @@ type Props = {
   src: string | null | undefined;
   alt: string;
   sizes: string;
-  /** Ana manşet LCP. */
+  /** Ana manşet / haber kapağı LCP. Optimizer'ı atlar. */
   priority?: boolean;
   logoSrc?: string | null;
   className?: string;
 };
 
-/** Kapak: next/image veya nötr placeholder (logo). Kırmızı boş kutu yok. */
+/**
+ * Kapak. LCP (priority) ise /_next/image yok: kaynak zaten webp, soğuk
+ * optimizer TTFB'si ilk ziyarette LCP'yi 0.5–0.7s şişiriyordu.
+ */
 export function CoverMedia({ src, alt, sizes, priority, logoSrc, className }: Props) {
   return (
     <div className={cn("relative overflow-hidden bg-neutral-100", className)}>
-      {src ? (
+      {src && priority ? (
+        // eslint-disable-next-line @next/next/no-img-element -- LCP: CDN direkt
+        <img
+          src={src}
+          alt={alt}
+          width={1600}
+          height={900}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : src ? (
         <Image
           src={src}
           alt={alt}
           fill
-          priority={priority}
-          fetchPriority={priority ? "high" : "auto"}
-          loading={priority ? "eager" : "lazy"}
           sizes={sizes}
+          loading="lazy"
+          fetchPriority="auto"
           className="object-cover"
         />
       ) : (

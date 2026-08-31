@@ -17,10 +17,12 @@ export function SiteBrandLogo({
   variant,
   siteName,
   className,
+  loading = "eager",
 }: {
   variant: Variant;
   siteName: string;
   className?: string;
+  loading?: "eager" | "lazy";
 }) {
   const [broken, setBroken] = useState(false);
   if (broken) {
@@ -34,6 +36,9 @@ export function SiteBrandLogo({
       width={167}
       height={40}
       className={className}
+      loading={loading}
+      decoding="async"
+      fetchPriority={loading === "lazy" ? "low" : "auto"}
       onError={() => setBroken(true)}
     />
   );

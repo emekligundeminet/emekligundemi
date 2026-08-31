@@ -134,7 +134,7 @@ export function SiteHeader({ categories, siteName, social }: SiteHeaderProps) {
               onClick={() => setOpen(false)}
               aria-label={siteName}
             >
-              <SiteBrandLogo variant="color" siteName={siteName} className="h-8 w-auto" />
+              <SiteBrandLogo variant="color" siteName={siteName} className="h-8 w-auto" loading="lazy" />
             </Link>
             <button
               type="button"

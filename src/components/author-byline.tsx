@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Author } from "@/types/author";
 
@@ -13,12 +12,14 @@ export function AuthorByline({
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       {author.logo_url ? (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element -- 32px; optimizer LCP ile yarışmasın
+        <img
           src={author.logo_url}
           alt=""
           width={32}
           height={32}
           className="h-8 w-8 rounded-full object-cover"
+          decoding="async"
         />
       ) : (
         <span
