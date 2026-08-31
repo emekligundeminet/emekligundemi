@@ -13,9 +13,12 @@ export const metadata: Metadata = {
   alternates: { types: rssAlternate() },
   themeColor: "#F71515",
   icons: {
-    icon: [{ url: BRAND_LOGO.favicon, type: "image/svg+xml" }],
+    icon: [
+      { url: BRAND_LOGO.favicon, type: "image/svg+xml" },
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
     shortcut: BRAND_LOGO.favicon,
-    apple: BRAND_LOGO.favicon,
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
   openGraph: { locale: OG_LOCALE, siteName: TITLE_SUFFIX, type: "website" },
   other: {

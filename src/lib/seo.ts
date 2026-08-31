@@ -43,8 +43,22 @@ export function rssAlternate(origin = SITE_ORIGIN): NonNullable<Metadata["altern
   return { "application/rss+xml": `${origin.replace(/\/$/, "")}/rss.xml` };
 }
 
+export function coverSizeFromUrl(url: string): { width?: number; height?: number } {
+  try {
+    const w = Number(new URL(url).searchParams.get("w"));
+    const h = Number(new URL(url).searchParams.get("h"));
+    return {
+      width: Number.isFinite(w) && w >= 1 ? Math.round(w) : undefined,
+      height: Number.isFinite(h) && h >= 1 ? Math.round(h) : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export function ogCoverImage(url: string, alt: string) {
-  return { url, alt, width: 1200, height: 675 };
+  const size = coverSizeFromUrl(url);
+  return { url, alt, ...size };
 }
 
 export function articleSocialMeta(opts: {

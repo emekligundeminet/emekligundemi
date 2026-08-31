@@ -59,5 +59,14 @@ export async function POST(request: Request) {
   }
 
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return NextResponse.json({ url: urlData.publicUrl, path });
+  const outMeta = await sharp(webpBuffer).metadata();
+  const publicUrl = new URL(urlData.publicUrl);
+  if (outMeta.width) publicUrl.searchParams.set("w", String(outMeta.width));
+  if (outMeta.height) publicUrl.searchParams.set("h", String(outMeta.height));
+  return NextResponse.json({
+    url: publicUrl.toString(),
+    path,
+    width: outMeta.width ?? null,
+    height: outMeta.height ?? null,
+  });
 }

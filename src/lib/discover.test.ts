@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { coverWidthError, DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
-import { INDEX_ROBOTS, NOINDEX_FOLLOW_ROBOTS, toIso8601, wordCountFromHtml } from "@/lib/seo";
+import {
+  coverSizeFromUrl,
+  INDEX_ROBOTS,
+  NOINDEX_FOLLOW_ROBOTS,
+  toIso8601,
+  wordCountFromHtml,
+} from "@/lib/seo";
 
 describe("Keşfet yayın eşiği", () => {
   it("1200px altı kapak reddedilir", () => {
@@ -20,6 +26,17 @@ describe("Keşfet yayın eşiği", () => {
   it("index robots Keşfet büyük önizleme taşır", () => {
     assert.equal(INDEX_ROBOTS.googleBot["max-image-preview"], "large");
     assert.equal(NOINDEX_FOLLOW_ROBOTS.index, false);
+  });
+
+  it("kapak URL ölçüleri uydurma değil", () => {
+    assert.deepEqual(coverSizeFromUrl("https://x.supabase.co/a.webp?w=1600&h=900"), {
+      width: 1600,
+      height: 900,
+    });
+    assert.deepEqual(coverSizeFromUrl("https://x.supabase.co/a.webp"), {
+      width: undefined,
+      height: undefined,
+    });
   });
 
   it("ISO 8601 ve kelime sayısı", () => {

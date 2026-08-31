@@ -1,7 +1,7 @@
 import { jsonLdSchemaType } from "@/lib/content-type";
 import { publisherLogoUrl } from "@/lib/publisher";
 import { SITE_ORIGIN } from "@/lib/site";
-import { toIso8601 } from "@/lib/seo";
+import { coverSizeFromUrl, toIso8601 } from "@/lib/seo";
 
 function originOf(canonical: string) {
   try {
@@ -78,8 +78,7 @@ export function newsArticleJsonLd(opts: {
           {
             "@type": "ImageObject",
             url: opts.coverAbs,
-            width: 1200,
-            height: 675,
+            ...coverSizeFromUrl(opts.coverAbs),
           },
         ]
       : undefined,
