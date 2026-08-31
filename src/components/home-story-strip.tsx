@@ -9,7 +9,7 @@ type Props = {
   articles: Article[];
   categories: Category[];
   logoSrc?: string | null;
-  /** Manşet yokken şerit sayfanın en üstünde kalır; ilk kapak LCP olur. */
+  /** Manşet yokken şerit sayfanın en üstünde kalır; ilk kapaklar LCP adayı olur. */
   priorityFirst?: boolean;
 };
 
@@ -31,7 +31,7 @@ export function HomeStoryStrip({ articles, categories, logoSrc, priorityFirst }:
                   src={article.cover_url}
                   alt={article.cover_alt || article.title}
                   sizes={IMG_SIZES.strip4}
-                  priority={priorityFirst && i === 0}
+                  priority={priorityFirst && i < 2}
                   logoSrc={logoSrc}
                   className="aspect-[16/9] w-full"
                 />

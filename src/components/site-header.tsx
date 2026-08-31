@@ -117,7 +117,7 @@ export function SiteHeader({ categories, siteName, social }: SiteHeaderProps) {
           onClick={() => setOpen(false)}
           aria-label="Menüyü kapat"
         />
-        <aside
+        <div
           id="site-menu"
           role="dialog"
           aria-modal="true"
@@ -170,7 +170,7 @@ export function SiteHeader({ categories, siteName, social }: SiteHeaderProps) {
             })}
           </ul>
           <SiteSocialMenu social={social} />
-        </aside>
+        </div>
       </div>
     </>
   );

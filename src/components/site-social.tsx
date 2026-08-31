@@ -53,7 +53,7 @@ export function SiteSocialMenu({ social }: { social?: SiteSocial }) {
           if (!item.href) {
             return (
               <li key={item.label}>
-                <span className="text-neutral-400" aria-label={item.label}>
+                <span className="text-neutral-400" role="img" aria-label={item.label}>
                   <Icon className={iconCls} strokeWidth={1.75} />
                 </span>
               </li>
