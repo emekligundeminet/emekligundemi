@@ -9,12 +9,22 @@ function kacisHtml(s: string) {
     .replaceAll('"', "&quot;");
 }
 
+/** Kaynak sitelerin ara başlıkları düz metne BÜYÜK HARF kısa satır olarak düşer. */
+export function araBaslikMi(satir: string) {
+  return (
+    satir.length <= 90 &&
+    /\p{L}/u.test(satir) &&
+    !/[.!?:;,]$/.test(satir) &&
+    satir === satir.toLocaleUpperCase("tr-TR")
+  );
+}
+
 export function govdeToHtml(haber: CekilenHaber) {
   const paragraflar = haber.govde
     .split(/\n+/)
     .map((p) => p.trim())
     .filter(Boolean)
-    .map((p) => `<p>${kacisHtml(p)}</p>`)
+    .map((p) => (araBaslikMi(p) ? `<h2>${kacisHtml(p)}</h2>` : `<p>${kacisHtml(p)}</p>`))
     .join("");
   const kaynak = `<p><em>Kaynak: ${kacisHtml(haber.kaynak)} — <a href="${kacisHtml(haber.link)}">${kacisHtml(haber.link)}</a></em></p>`;
   return `${kaynak}${paragraflar}`;

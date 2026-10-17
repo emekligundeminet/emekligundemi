@@ -17,6 +17,7 @@ import {
   Calculator,
   Stamp,
   Scale,
+  Images,
 } from "lucide-react";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import type { TenantRole } from "@/types/tenant-role";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/admin/authors", label: "Yazarlar", icon: UserRound },
   { href: "/admin/sources", label: "Kaynaklar", icon: Newspaper },
   { href: "/admin/articles", label: "Haberler", icon: FileText },
+  { href: "/admin/stok", label: "Stok görseller", icon: Images },
   { href: "/admin/parametreler", label: "Hesap parametreleri", icon: Calculator },
   { href: "/admin/kunye", label: "Künye", icon: Stamp },
   { href: "/admin/yasal", label: "Yasal sayfalar", icon: Scale },

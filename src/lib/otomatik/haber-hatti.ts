@@ -18,6 +18,7 @@ import { lookupTenantByHostname } from "@/lib/tenant-lookup";
 import type { Json } from "@/types/db";
 import { KAPAK_H, KAPAK_W, kapakUret } from "./kapak";
 import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin } from "./konu";
+import { stokListele, stokSec, stokVeri } from "./stok";
 
 const BUCKET = "article-images";
 /**
@@ -29,6 +30,8 @@ const ESZAMANLI = 4;
 /** Tekrar okunmasın diye hatırlanan link sayısı. */
 const HAFIZA = 600;
 const AYAR_ANAHTARI = "otomatikCekim";
+/** Aynı stok fotoğraf bu kadar haber boyunca tekrar seçilmez (havuz yeterliyse). */
+const STOK_TEKRAR = 8;
 
 export type HatSonucu = {
   mod: "claude" | "ham";
@@ -44,10 +47,10 @@ function ayarlar(settings: Json): Record<string, unknown> {
     : {};
 }
 
-function islenenler(settings: Record<string, unknown>): string[] {
+function ayarListesi(settings: Record<string, unknown>, alan: string): string[] {
   const blok = settings[AYAR_ANAHTARI];
   if (!blok || typeof blok !== "object") return [];
-  const liste = (blok as Record<string, unknown>).islenenler;
+  const liste = (blok as Record<string, unknown>)[alan];
   return Array.isArray(liste) ? liste.filter((x): x is string => typeof x === "string") : [];
 }
 
@@ -71,12 +74,15 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
   const tenantId = tenant.tenant_id;
   const settings = ayarlar(tenant.settings);
 
-  const hafiza = new Set(islenenler(settings));
+  const hafiza = new Set(ayarListesi(settings, "islenenler"));
+  const sonStoklar = ayarListesi(settings, "sonStoklar");
   const { config } = scrapeConfigFromSettings(tenant.settings);
   const tarama = await tara(config, (link) => hafiza.has(link));
 
   const kategoriler = (await getCategories(tenantId)).filter((c) => c.slug !== "blog");
   const yazar = (await getAuthors(tenantId)).find((a) => a.name === "Emekli Haber Merkezi");
+  // Stok listesi alınamazsa kırmızı kapakla devam edilir.
+  const stoklar = await stokListele(tenantId).catch(() => []);
 
   const adaylar = tarama.haberler.filter((h) => emekliKonusuMu(h.baslik, h.govde));
   const eslesen = new Set(adaylar.map((h) => h.link));
@@ -132,7 +138,9 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
       }
       const kategori = kategoriler.find((c) => c.slug === yazi.kategori);
       const slug = yazi.slug;
-      const png = await kapakUret(yazi.kapakBasligi, kategori?.name ?? "Emekli Haberleri");
+      const stok = stokSec(stoklar, yazi.kategori, sonStoklar);
+      const foto = stok ? await stokVeri(stok.path).catch(() => null) : null;
+      const png = await kapakUret(yazi.kapakBasligi, kategori?.name ?? "Emekli Haberleri", foto);
       const coverUrl = await kapakYukle(tenantId, slug, png);
 
       const taslak = await createArticle(tenantId, {
@@ -165,6 +173,7 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
 
   settings[AYAR_ANAHTARI] = {
     islenenler: [...hafiza].slice(-HAFIZA),
+    sonStoklar: sonStoklar.slice(-STOK_TEKRAR),
     sonCalisma: new Date().toISOString(),
   };
   await updateTenantSettings(tenantId, settings);

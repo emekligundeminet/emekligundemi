@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { araBaslikMi } from "../haber-draft";
 import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin } from "./konu";
 
 const SLUGS = ["guncel", "emekli-maasi", "zam", "sgk", "promosyon", "ikramiye-ve-odemeler", "emekli-yasam", "gundem"];
@@ -39,4 +40,12 @@ test("uzun başlık kelime sınırında kısaltılır", () => {
   assert.ok(kisa.length <= 91);
   assert.ok(kisa.endsWith("…"));
   assert.equal(kapakIcinKisalt("Kısa başlık"), "Kısa başlık");
+});
+
+test("büyük harfli kısa satır ara başlık sayılır", () => {
+  assert.equal(araBaslikMi("ASKERLİK İZNİNDE 10 GÜN ÇALIŞTI"), true);
+  assert.equal(araBaslikMi("YARGITAY KARARI ONADI"), true);
+  assert.equal(araBaslikMi("Yargıtay 10. Hukuk Dairesi kararını verdi."), false);
+  assert.equal(araBaslikMi("SGK AÇIKLADI: ÖDEMELER BAŞLADI."), false);
+  assert.equal(araBaslikMi("2026"), false);
 });
