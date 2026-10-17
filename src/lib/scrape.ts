@@ -36,8 +36,13 @@ async function govdeCek(url: string) {
   return parcalar.join("\n\n") || el.text().replace(/\s+/g, " ").trim();
 }
 
-export async function tara(config: ScrapeConfig): Promise<TaramaSonucu> {
+/** atla: daha önce okunan linkler tekrar indirilmesin (otomatik çekme). */
+export async function tara(
+  config: ScrapeConfig,
+  atla?: (link: string) => boolean
+): Promise<TaramaSonucu> {
   const gorulen = new Set<string>();
+  const okunanlar: string[] = [];
   const sonuclar: CekilenHaber[] = [];
   let tarandi = 0;
   const include = keywordsToRegex(config.include);
@@ -53,11 +58,13 @@ export async function tara(config: ScrapeConfig): Promise<TaramaSonucu> {
         const link = item.link ?? "";
         if (!link || gorulen.has(link)) continue;
         gorulen.add(link);
+        if (atla?.(link)) continue;
 
         let govde = "";
         try {
           govde = await govdeCek(link);
           tarandi += 1;
+          okunanlar.push(link);
         } catch (err) {
           const msg = err instanceof Error ? err.message : "bilinmeyen hata";
           console.error(`[HATA] Gövde alınamadı (${link}): ${msg}`);
@@ -85,6 +92,7 @@ export async function tara(config: ScrapeConfig): Promise<TaramaSonucu> {
   return {
     haberler: sonuclar,
     tarandi,
+    okunanlar,
     mesaj: `${tarandi} haber sayfası okundu, ${sonuclar.length} eşleşme.`,
   };
 }

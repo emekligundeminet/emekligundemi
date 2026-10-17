@@ -11,6 +11,7 @@
     "rss": "node scripts/rss.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.95.3",
     "@tiptap/extension-image": "^3.30.5",

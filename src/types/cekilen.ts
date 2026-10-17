@@ -10,5 +10,7 @@ export type CekilenHaber = {
 export type TaramaSonucu = {
   haberler: CekilenHaber[];
   tarandi: number;
+  /** Gövdesi başarıyla okunan tüm linkler (eşleşmeyenler dahil). */
+  okunanlar: string[];
   mesaj: string;
 };

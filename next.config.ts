@@ -15,6 +15,10 @@ const supabaseHost = supabaseImageHost();
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Kapak üretimi fontları fs ile okur; Vercel paketine dahil edilsin.
+  outputFileTracingIncludes: {
+    "/api/cron/haber-cek": ["./src/assets/fonts/**"],
+  },
   async headers() {
     return [
       {
