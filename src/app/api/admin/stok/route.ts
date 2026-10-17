@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { forbidIfCannotWrite, requireAdminApi } from "@/lib/admin-auth";
-import { DISCOVER_COVER_MIN_WIDTH, measureSizeFromBuffer } from "@/lib/cover-image";
+import { measureSizeFromBuffer } from "@/lib/cover-image";
 import { slugify } from "@/lib/slugify";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { GENEL, STOK_BUCKET, stokKlasoru, stokListele } from "@/lib/otomatik/stok";
@@ -10,6 +10,11 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const MAX_BYTES = 4 * 1024 * 1024;
+/**
+ * Kapak her zaman 1600px üretilir (Discover'ın 1200px şartı orada karşılanır);
+ * fotoğraf koyu zeminin altında büyütüldüğü için 800px yeterli.
+ */
+const STOK_MIN_W = 800;
 
 export async function GET() {
   const ctx = await requireAdminApi();
@@ -45,9 +50,9 @@ export async function POST(request: Request) {
   }
   const input = Buffer.from(await file.arrayBuffer());
   const size = measureSizeFromBuffer(input);
-  if (size && size.width < DISCOVER_COVER_MIN_WIDTH) {
+  if (size && size.width < STOK_MIN_W) {
     return NextResponse.json(
-      { message: `Görsel en az ${DISCOVER_COVER_MIN_WIDTH}px genişlikte olmalı (bu ${size.width}px).` },
+      { message: `Görsel en az ${STOK_MIN_W}px genişlikte olmalı (bu ${size.width}px). Pexels/Unsplash'te büyük boyutu indirin.` },
       { status: 400 }
     );
   }

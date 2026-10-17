@@ -105,7 +105,7 @@ export default function AdminStokPage() {
         <h1 className="text-lg font-semibold text-slate-800 sm:text-xl">Stok görseller</h1>
         <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
           Otomatik çekilen haberlere kapak olarak rastgele seçilir; üstüne başlık ve logo basılır.
-          Önce haberin kategorisinden, yoksa “Genel”den seçilir. En az 1200px genişlikte, telifsiz
+          Önce haberin kategorisinden, yoksa “Genel”den seçilir. En az 800px genişlikte, telifsiz
           (Pexels, Unsplash, Pixabay) yatay fotoğraflar yükleyin.
         </p>
       </div>
