@@ -12,13 +12,13 @@ import { tara, type CekilenHaber } from "@/lib/scrape";
 import { scrapeConfigFromSettings } from "@/lib/scrape-config";
 import { SITE_ORIGIN } from "@/lib/site";
 import { slugify } from "@/lib/slugify";
-import { createArticle, getAuthors, getCategories, updateTenantSettings } from "@/lib/store";
+import { createArticle, getAuthors, getCategories } from "@/lib/store";
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { lookupTenantByHostname } from "@/lib/tenant-lookup";
 import type { Json } from "@/types/db";
 import { KAPAK_H, KAPAK_W, kapakUret } from "./kapak";
-import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin } from "./konu";
-import { stokListele, stokSec, stokVeri } from "./stok";
+import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin, otomatikOzet } from "./konu";
+import { ayarlariGuncelle, stokAltlari, stokListele, stokSec, stokVeri } from "./stok";
 
 const BUCKET = "article-images";
 /**
@@ -83,6 +83,7 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
   const yazar = (await getAuthors(tenantId)).find((a) => a.name === "Emekli Haber Merkezi");
   // Stok listesi alınamazsa kırmızı kapakla devam edilir.
   const stoklar = await stokListele(tenantId).catch(() => []);
+  const stokAlt = stokAltlari(tenant.settings);
 
   const adaylar = tarama.haberler.filter((h) => emekliKonusuMu(h.baslik, h.govde));
   const eslesen = new Set(adaylar.map((h) => h.link));
@@ -107,11 +108,12 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
         baslik: haber.baslik,
         slug: haberSlug(haber),
         kapakBasligi: kapakIcinKisalt(haber.baslik),
-        ozet: null,
+        ozet: otomatikOzet(haber.govde),
         html: govdeToHtml(haber),
         kategori: kategoriTahmin(haber.baslik, haber.govde, slugs),
+        // Boşsa site haber başlığını kullanır.
         metaBaslik: null,
-        metaAciklama: null,
+        metaAciklama: otomatikOzet(haber.govde, 155),
       };
     }
     const yazi = await haberiYenidenYaz(haber, slugs);
@@ -149,7 +151,8 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
         excerpt: yazi.ozet,
         content_html: yazi.html,
         cover_url: coverUrl,
-        cover_alt: yazi.kapakBasligi,
+        // Fotoğraflı kapakta panelde yazılan tarif; kırmızı kapakta görseldeki başlık.
+        cover_alt: stok ? (stokAlt[stok.path] ?? `${kategori?.name ?? "Emekli"} haberi için temsili fotoğraf`) : yazi.kapakBasligi,
         category_id: kategori?.id ?? null,
         author_id: yazar?.id ?? null,
         status: "draft",
@@ -171,12 +174,13 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
     await Promise.all(sira.slice(i, i + ESZAMANLI).map(isle));
   }
 
-  settings[AYAR_ANAHTARI] = {
-    islenenler: [...hafiza].slice(-HAFIZA),
-    sonStoklar: sonStoklar.slice(-STOK_TEKRAR),
-    sonCalisma: new Date().toISOString(),
-  };
-  await updateTenantSettings(tenantId, settings);
+  await ayarlariGuncelle(tenantId, (taze) => {
+    taze[AYAR_ANAHTARI] = {
+      islenenler: [...hafiza].slice(-HAFIZA),
+      sonStoklar: sonStoklar.slice(-STOK_TEKRAR),
+      sonCalisma: new Date().toISOString(),
+    };
+  });
 
   sonuc.mesaj = `[${sonuc.mod}] ${tarama.tarandi} sayfa okundu, ${adaylar.length} emekli haberi, ${sonuc.taslaklar.length} taslak, ${sonuc.elenen} elendi, ${sonuc.hatalar.length} hata.`;
   return sonuc;

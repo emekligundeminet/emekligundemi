@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import type { Category } from "@/types/category";
 
-type StokGorsel = { path: string; kategori: string; url: string };
+type StokGorsel = { path: string; kategori: string; url: string; alt: string };
 
 const GENEL = "genel";
 const MAX_W = 1920;
@@ -94,6 +94,19 @@ export default function AdminStokPage() {
     setStoklar((s) => s.filter((x) => x.path !== path));
   };
 
+  const altKaydet = async (path: string, alt: string) => {
+    const res = await fetch("/api/admin/stok", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, alt }),
+    });
+    if (!res.ok) {
+      toast.error("Açıklama kaydedilemedi.");
+      return;
+    }
+    toast.success("Açıklama kaydedildi.");
+  };
+
   const gruplar = [
     { slug: GENEL, name: "Genel (her kategoriye)" },
     ...kategoriler.map((c) => ({ slug: c.slug, name: c.name })),
@@ -105,7 +118,9 @@ export default function AdminStokPage() {
         <h1 className="text-lg font-semibold text-slate-800 sm:text-xl">Stok görseller</h1>
         <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
           Otomatik çekilen haberlere kapak olarak rastgele seçilir; üstüne başlık ve logo basılır.
-          Önce haberin kategorisinden, yoksa “Genel”den seçilir. En az 800px genişlikte, telifsiz
+          Önce haberin kategorisinden, yoksa “Genel”den seçilir. Her görselin altına bir kez
+          ne gösterdiğini yazın (ör. “Türk lirası banknotlarını sayan eller”); habere alt metin
+          olarak otomatik eklenir. En az 800px genişlikte, telifsiz
           (Pexels, Unsplash, Pixabay) yatay fotoğraflar yükleyin.
         </p>
       </div>
@@ -157,7 +172,22 @@ export default function AdminStokPage() {
                     {resimler.map((s) => (
                       <div key={s.path} className="group relative overflow-hidden rounded-lg border border-slate-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={s.url} alt="" className="aspect-video w-full object-cover" loading="lazy" />
+                        <img src={s.url} alt={s.alt} className="aspect-video w-full object-cover" loading="lazy" />
+                        <input
+                          defaultValue={s.alt}
+                          placeholder="Görseli tarif edin (alt metin)"
+                          maxLength={125}
+                          onBlur={(e) => {
+                            const alt = e.target.value.trim();
+                            if (alt !== s.alt) {
+                              s.alt = alt;
+                              altKaydet(s.path, alt);
+                            }
+                          }}
+                          className={`w-full border-t px-2 py-1.5 text-xs outline-none focus:bg-indigo-50 ${
+                            s.alt ? "border-slate-200 text-slate-700" : "border-amber-300 bg-amber-50 text-slate-700"
+                          }`}
+                        />
                         <button
                           type="button"
                           onClick={() => sil(s.path)}

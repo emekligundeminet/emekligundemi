@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { araBaslikMi } from "../haber-draft";
-import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin } from "./konu";
+import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin, otomatikOzet } from "./konu";
 
 const SLUGS = ["guncel", "emekli-maasi", "zam", "sgk", "promosyon", "ikramiye-ve-odemeler", "emekli-yasam", "gundem"];
 
@@ -48,4 +48,21 @@ test("büyük harfli kısa satır ara başlık sayılır", () => {
   assert.equal(araBaslikMi("Yargıtay 10. Hukuk Dairesi kararını verdi."), false);
   assert.equal(araBaslikMi("SGK AÇIKLADI: ÖDEMELER BAŞLADI."), false);
   assert.equal(araBaslikMi("2026"), false);
+});
+
+test("otomatik özet ilk dolu paragraftan, cümle sonundan kesilir", () => {
+  const govde =
+    "ASKERLİK İZNİNDE 10 GÜN ÇALIŞTI\nKısa satır.\nYargıtay 10. Hukuk Dairesi, askerlik sırasında izinde çalışan emeklinin sigorta günleri için emsal karar verdi. Mahkeme yerel mahkemenin kararını onadı ve SGK'nin itirazını reddetti.\nİkinci paragraf.";
+  const ozet = otomatikOzet(govde)!;
+  assert.ok(ozet.startsWith("Yargıtay"));
+  assert.ok(ozet.length <= 160);
+  assert.ok(ozet.endsWith("verdi."));
+  assert.equal(otomatikOzet("Kısa.\nÇOK KISA"), null);
+});
+
+test("cümle sonu yoksa kelime sınırında üç noktayla kesilir", () => {
+  const uzun = "Emekli aylıklarına ocak ayında yapılacak artış için ekonomistlerin tahminleri netleşirken SSK ve Bağ-Kur emeklilerinin alacağı en düşük aylık tutarı da merak konusu oldu ve hesaplamalar sürüyor";
+  const ozet = otomatikOzet(uzun, 155)!;
+  assert.ok(ozet.length <= 156);
+  assert.ok(ozet.endsWith("…"));
 });

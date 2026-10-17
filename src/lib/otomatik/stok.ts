@@ -9,7 +9,47 @@ import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 export const STOK_BUCKET = "article-images";
 export const GENEL = "genel";
 
-export type StokGorsel = { path: string; kategori: string; url: string };
+export type StokGorsel = { path: string; kategori: string; url: string; alt?: string };
+
+/**
+ * Tenant ayarlarını taze okuyup değiştirir. Uzun süren haber turu başta
+ * okuduğu eski kopyayı yazarsa, arada panelden kaydedilen ayarlar silinirdi.
+ */
+export async function ayarlariGuncelle(
+  tenantId: string,
+  degistir: (settings: Record<string, unknown>) => void
+) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.from("tenants").select("settings").eq("id", tenantId).single();
+  if (error) throw new Error(error.message);
+  const raw = data?.settings;
+  const settings =
+    raw && typeof raw === "object" && !Array.isArray(raw) ? { ...(raw as Record<string, unknown>) } : {};
+  degistir(settings);
+  const { error: upErr } = await supabase.from("tenants").update({ settings }).eq("id", tenantId);
+  if (upErr) throw new Error(upErr.message);
+}
+
+/** settings.stokAltlar: { [path]: "görseli tarif eden cümle" } */
+export function stokAltlari(settings: unknown): Record<string, string> {
+  if (!settings || typeof settings !== "object") return {};
+  const map = (settings as Record<string, unknown>).stokAltlar;
+  if (!map || typeof map !== "object" || Array.isArray(map)) return {};
+  return Object.fromEntries(
+    Object.entries(map as Record<string, unknown>).filter(
+      (e): e is [string, string] => typeof e[1] === "string"
+    )
+  );
+}
+
+export async function stokAltKaydet(tenantId: string, path: string, alt: string | null) {
+  await ayarlariGuncelle(tenantId, (settings) => {
+    const map = stokAltlari(settings);
+    if (alt?.trim()) map[path] = alt.trim().slice(0, 125);
+    else delete map[path];
+    settings.stokAltlar = map;
+  });
+}
 
 export function stokKlasoru(tenantId: string) {
   return `${tenantId}/stok`;

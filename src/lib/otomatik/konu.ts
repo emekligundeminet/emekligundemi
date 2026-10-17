@@ -50,3 +50,20 @@ export function kapakIcinKisalt(baslik: string, max = 90) {
   const kesik = temiz.slice(0, max);
   return `${kesik.slice(0, kesik.lastIndexOf(" ")).replace(/[,:;–-]+$/, "")}…`;
 }
+
+/**
+ * Claude yokken özet / meta açıklama: ara başlık ve kısa satırlar atlanır,
+ * ilk dolu paragraf cümle sonundan (yoksa kelime sınırından) kesilir.
+ */
+export function otomatikOzet(govde: string, max = 160) {
+  const paragraf = govde
+    .split(/\n+/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .find((p) => p.length >= 60 && p !== p.toLocaleUpperCase("tr-TR"));
+  if (!paragraf) return null;
+  if (paragraf.length <= max) return paragraf;
+  const kesik = paragraf.slice(0, max);
+  const cumleSonu = Math.max(kesik.lastIndexOf(". "), kesik.lastIndexOf("! "), kesik.lastIndexOf("? "));
+  if (cumleSonu >= 80) return kesik.slice(0, cumleSonu + 1);
+  return `${kesik.slice(0, kesik.lastIndexOf(" ")).replace(/[,:;–-]+$/, "")}…`;
+}
