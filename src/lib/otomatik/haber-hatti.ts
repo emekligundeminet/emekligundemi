@@ -13,14 +13,12 @@ import { scrapeConfigFromSettings } from "@/lib/scrape-config";
 import { SITE_ORIGIN } from "@/lib/site";
 import { slugify } from "@/lib/slugify";
 import { createArticle, getAuthors, getCategories } from "@/lib/store";
-import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { lookupTenantByHostname } from "@/lib/tenant-lookup";
 import type { Json } from "@/types/db";
-import { KAPAK_H, KAPAK_W, kapakUret } from "./kapak";
+import { kapakUret } from "./kapak";
 import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin, otomatikOzet } from "./konu";
-import { ayarlariGuncelle, stokAltlari, stokListele, stokSec, stokVeri } from "./stok";
+import { ayarlariGuncelle, kapakYukle, stokAltlari, stokListele, stokSec, stokVeri } from "./stok";
 
-const BUCKET = "article-images";
 /**
  * Hobby planda cron günde bir kez çalışır: bir turda en fazla bu kadar haber
  * Claude'a gider, aynı anda EŞZAMANLI kadarı işlenir (300 sn sınırı).
@@ -52,20 +50,6 @@ function ayarListesi(settings: Record<string, unknown>, alan: string): string[] 
   if (!blok || typeof blok !== "object") return [];
   const liste = (blok as Record<string, unknown>)[alan];
   return Array.isArray(liste) ? liste.filter((x): x is string => typeof x === "string") : [];
-}
-
-async function kapakYukle(tenantId: string, slug: string, png: Buffer) {
-  const supabase = createSupabaseAdminClient();
-  const unique = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-  const path = `${tenantId}/${slug.slice(0, 60).replace(/-+$/, "")}-${unique}.png`;
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, png, { contentType: "image/png", upsert: true });
-  if (error) throw new Error(`Kapak yüklenemedi: ${error.message}`);
-  const url = new URL(supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl);
-  url.searchParams.set("w", String(KAPAK_W));
-  url.searchParams.set("h", String(KAPAK_H));
-  return url.toString();
 }
 
 export async function haberHattiniCalistir(): Promise<HatSonucu> {

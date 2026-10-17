@@ -19,6 +19,7 @@ import type { Author } from "@/types/author";
 import type { Source } from "@/types/source";
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
 import { coverAltWarning } from "@/lib/cover-alt";
+import { StokKapakSecici } from "@/components/stok-kapak-secici";
 import { ArticleSourcesEditor } from "@/components/article-sources-editor";
 import type { Kaynak } from "@/lib/kaynak";
 import { DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
@@ -77,6 +78,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
   const [canPublish, setCanPublish] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [stokAcik, setStokAcik] = useState(false);
   const isEdit = !!initialData?.id;
 
   useEffect(() => {
@@ -561,6 +563,27 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
                     />
                     {uploading && <Loader2 className="size-4 shrink-0 animate-spin text-slate-400" />}
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                    onClick={() => setStokAcik(true)}
+                  >
+                    <ImageIcon className="size-4" />
+                    Stoktan kapak seç (başlık + logo basılır)
+                  </Button>
+                  <StokKapakSecici
+                    open={stokAcik}
+                    onOpenChange={setStokAcik}
+                    baslik={title}
+                    kategoriSlug={categories.find((c) => c.id === categoryId)?.slug ?? null}
+                    kategoriAdi={categories.find((c) => c.id === categoryId)?.name ?? null}
+                    onSec={(url, alt) => {
+                      setCoverUrl(url);
+                      if (alt) setCoverAlt(alt);
+                    }}
+                  />
                   <Input
                     value={coverUrl ?? ""}
                     onChange={(e) => setCoverUrl(e.target.value.trim() || null)}

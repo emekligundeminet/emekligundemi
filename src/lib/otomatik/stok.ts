@@ -5,6 +5,7 @@
  * (kategori "genel" ise her kategoriye düşebilir).
  */
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
+import { havuzKategorileri } from "./konu";
 
 export const STOK_BUCKET = "article-images";
 export const GENEL = "genel";
@@ -79,13 +80,6 @@ export async function stokListele(tenantId: string): Promise<StokGorsel[]> {
  * atlar (havuz küçükse yine de bir şey döner). Senkron: paralel turda aynı
  * görsel iki habere düşmesin diye çağıran `son` listesine hemen ekler.
  */
-/** Aynı fotoğraf havuzunu paylaşan kategoriler. */
-const ORTAK_HAVUZLAR = [["zam", "emekli-maasi", "ikramiye-ve-odemeler", "promosyon"]];
-
-function havuzKategorileri(kategori: string) {
-  return ORTAK_HAVUZLAR.find((g) => g.includes(kategori)) ?? [kategori];
-}
-
 export function stokSec(stoklar: StokGorsel[], kategori: string, son: string[]) {
   const kategoriler = havuzKategorileri(kategori);
   const havuz = stoklar.filter((s) => kategoriler.includes(s.kategori));
@@ -106,4 +100,20 @@ export async function stokVeri(path: string) {
   const mime = path.endsWith(".png") ? "image/png" : "image/jpeg";
   const b64 = Buffer.from(await data.arrayBuffer()).toString("base64");
   return `data:${mime};base64,${b64}`;
+}
+
+/** Üretilen kapak PNG'sini yükler; ?w&h ekli URL döner (yayın kontrolü ölçüyü oradan okur). */
+export async function kapakYukle(tenantId: string, slug: string, png: Buffer, w = 1600, h = 900) {
+  const supabase = createSupabaseAdminClient();
+  const unique = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  const stem = slug.slice(0, 60).replace(/-+$/, "") || "kapak";
+  const path = `${tenantId}/${stem}-${unique}.png`;
+  const { error } = await supabase.storage
+    .from(STOK_BUCKET)
+    .upload(path, png, { contentType: "image/png", upsert: true });
+  if (error) throw new Error(`Kapak yüklenemedi: ${error.message}`);
+  const url = new URL(supabase.storage.from(STOK_BUCKET).getPublicUrl(path).data.publicUrl);
+  url.searchParams.set("w", String(w));
+  url.searchParams.set("h", String(h));
+  return url.toString();
 }

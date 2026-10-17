@@ -67,3 +67,10 @@ export function otomatikOzet(govde: string, max = 160) {
   if (cumleSonu >= 80) return kesik.slice(0, cumleSonu + 1);
   return `${kesik.slice(0, kesik.lastIndexOf(" ")).replace(/[,:;–-]+$/, "")}…`;
 }
+
+/** Aynı stok fotoğraf havuzunu paylaşan kategoriler (panel ve otomatik hat ortak). */
+const ORTAK_HAVUZLAR = [["zam", "emekli-maasi", "ikramiye-ve-odemeler", "promosyon"]];
+
+export function havuzKategorileri(kategori: string) {
+  return ORTAK_HAVUZLAR.find((g) => g.includes(kategori)) ?? [kategori];
+}
