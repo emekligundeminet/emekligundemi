@@ -118,7 +118,7 @@ export default function AdminStokPage() {
         <h1 className="text-lg font-semibold text-slate-800 sm:text-xl">Stok görseller</h1>
         <p className="mt-0.5 text-xs text-slate-500 sm:text-sm">
           Otomatik çekilen haberlere kapak olarak rastgele seçilir; üstüne başlık ve logo basılır.
-          Önce haberin kategorisinden (Zam ile Emekli Maaşı ortak kullanılır), yoksa “Genel”den seçilir. Her görselin altına bir kez
+          Önce haberin kategorisinden (Zam, Emekli Maaşı, İkramiye ve Ödemeler, Promosyon tek havuz), yoksa “Genel”den seçilir. Her görselin altına bir kez
           ne gösterdiğini yazın (ör. “Türk lirası banknotlarını sayan eller”); habere alt metin
           olarak otomatik eklenir. En az 800px genişlikte, telifsiz
           (Pexels, Unsplash, Pixabay) yatay fotoğraflar yükleyin.

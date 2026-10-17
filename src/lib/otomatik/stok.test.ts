@@ -4,10 +4,12 @@ import { stokSec, type StokGorsel } from "./stok";
 
 const g = (kategori: string, n: number): StokGorsel => ({ path: `${kategori}-${n}`, kategori, url: "" });
 
-test("zam ve emekli maaşı aynı havuzdan seçer", () => {
+test("para kategorileri (zam, maaş, ikramiye, promosyon) aynı havuzdan seçer", () => {
   const stoklar = [g("zam", 1), g("genel", 1)];
-  assert.equal(stokSec(stoklar, "emekli-maasi", [])?.kategori, "zam");
-  assert.equal(stokSec([g("emekli-maasi", 1)], "zam", [])?.kategori, "emekli-maasi");
+  for (const k of ["emekli-maasi", "ikramiye-ve-odemeler", "promosyon"]) {
+    assert.equal(stokSec(stoklar, k, [])?.kategori, "zam");
+  }
+  assert.equal(stokSec([g("emekli-maasi", 1)], "promosyon", [])?.kategori, "emekli-maasi");
 });
 
 test("kategoride yoksa genel havuza düşer, o da yoksa null", () => {

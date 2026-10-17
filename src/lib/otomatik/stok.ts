@@ -75,12 +75,12 @@ export async function stokListele(tenantId: string): Promise<StokGorsel[]> {
 }
 
 /**
- * Önce haberin kategorisinden (Zam ile Emekli Maaşı ortak), yoksa genel havuzdan seçer; son kullanılanları
+ * Önce haberin kategorisinden (Zam, Emekli Maaşı, İkramiye ve Promosyon ortak), yoksa genel havuzdan seçer; son kullanılanları
  * atlar (havuz küçükse yine de bir şey döner). Senkron: paralel turda aynı
  * görsel iki habere düşmesin diye çağıran `son` listesine hemen ekler.
  */
 /** Aynı fotoğraf havuzunu paylaşan kategoriler. */
-const ORTAK_HAVUZLAR = [["zam", "emekli-maasi"]];
+const ORTAK_HAVUZLAR = [["zam", "emekli-maasi", "ikramiye-ve-odemeler", "promosyon"]];
 
 function havuzKategorileri(kategori: string) {
   return ORTAK_HAVUZLAR.find((g) => g.includes(kategori)) ?? [kategori];
