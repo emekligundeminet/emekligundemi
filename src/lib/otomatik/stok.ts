@@ -75,12 +75,20 @@ export async function stokListele(tenantId: string): Promise<StokGorsel[]> {
 }
 
 /**
- * Önce haberin kategorisinden, yoksa genel havuzdan seçer; son kullanılanları
+ * Önce haberin kategorisinden (Zam ile Emekli Maaşı ortak), yoksa genel havuzdan seçer; son kullanılanları
  * atlar (havuz küçükse yine de bir şey döner). Senkron: paralel turda aynı
  * görsel iki habere düşmesin diye çağıran `son` listesine hemen ekler.
  */
+/** Aynı fotoğraf havuzunu paylaşan kategoriler. */
+const ORTAK_HAVUZLAR = [["zam", "emekli-maasi"]];
+
+function havuzKategorileri(kategori: string) {
+  return ORTAK_HAVUZLAR.find((g) => g.includes(kategori)) ?? [kategori];
+}
+
 export function stokSec(stoklar: StokGorsel[], kategori: string, son: string[]) {
-  const havuz = stoklar.filter((s) => s.kategori === kategori);
+  const kategoriler = havuzKategorileri(kategori);
+  const havuz = stoklar.filter((s) => kategoriler.includes(s.kategori));
   const aday = havuz.length > 0 ? havuz : stoklar.filter((s) => s.kategori === GENEL);
   if (aday.length === 0) return null;
   const taze = aday.filter((s) => !son.includes(s.path));
