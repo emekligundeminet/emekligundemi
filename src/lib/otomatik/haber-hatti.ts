@@ -1,10 +1,14 @@
 /**
- * Otomatik haber hattı: RSS'ten emekli haberlerini çeker, Claude ile özgün
- * olarak yeniden yazar, markalı kapak üretir ve TASLAK olarak kaydeder.
- * Hiçbir şey kendiliğinden yayınlanmaz; editör panelden onaylar.
+ * Otomatik haber hattı: RSS'ten emekli haberlerini çeker, markalı kapak
+ * üretir ve TASLAK olarak kaydeder. Hiçbir şey kendiliğinden yayınlanmaz.
+ *
+ * İki mod:
+ * - ANTHROPIC_API_KEY varsa Claude haberi özgün olarak yeniden yazar.
+ * - Yoksa ham metin taslağa düşer; editör yayından önce kendisi özgünleştirir.
  */
 import { haberiYenidenYaz, yenidenYazilmisHtml } from "@/lib/ai-revise";
-import { tara } from "@/lib/scrape";
+import { govdeToHtml, haberSlug } from "@/lib/haber-draft";
+import { tara, type CekilenHaber } from "@/lib/scrape";
 import { scrapeConfigFromSettings } from "@/lib/scrape-config";
 import { SITE_ORIGIN } from "@/lib/site";
 import { slugify } from "@/lib/slugify";
@@ -13,6 +17,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 import { lookupTenantByHostname } from "@/lib/tenant-lookup";
 import type { Json } from "@/types/db";
 import { KAPAK_H, KAPAK_W, kapakUret } from "./kapak";
+import { emekliKonusuMu, kapakIcinKisalt, kategoriTahmin } from "./konu";
 
 const BUCKET = "article-images";
 /**
@@ -25,18 +30,8 @@ const ESZAMANLI = 4;
 const HAFIZA = 600;
 const AYAR_ANAHTARI = "otomatikCekim";
 
-/**
- * RSS anahtar kelime filtresi gövdede tek bir "SGK" geçse bile eşleşir.
- * Claude'a (ücretli) gitmeden önce: başlıkta emekli konusu olsun ya da
- * gövde konuyu en az 3 kez ansın.
- */
-const KONU = /emekli|sgk|ssk|ba[gğ]-?kur|eyt|ikramiye|intibak|prim g[uü]n|ayl[ıi]k ba[gğ]la|maa[sş] ba[gğ]la/gi;
-export function emekliKonusuMu(baslik: string, govde: string) {
-  if (new RegExp(KONU.source, "i").test(baslik)) return true;
-  return (govde.match(KONU)?.length ?? 0) >= 3;
-}
-
 export type HatSonucu = {
+  mod: "claude" | "ham";
   taslaklar: { baslik: string; id: string }[];
   elenen: number;
   hatalar: string[];
@@ -88,21 +83,55 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
   // Anahtar kelimeye uymayanlar bir daha indirilmesin.
   for (const link of tarama.okunanlar) if (!eslesen.has(link)) hafiza.add(link);
 
-  const sonuc: HatSonucu = { taslaklar: [], elenen: 0, hatalar: [], mesaj: "" };
+  const claudeVar = Boolean(process.env.ANTHROPIC_API_KEY);
+  const slugs = kategoriler.map((c) => c.slug);
+  const sonuc: HatSonucu = {
+    mod: claudeVar ? "claude" : "ham",
+    taslaklar: [],
+    elenen: 0,
+    hatalar: [],
+    mesaj: "",
+  };
+
+  /** Claude yoksa ham metinden aynı taslak alanlarını üretir. */
+  const hazirla = async (haber: CekilenHaber) => {
+    if (!claudeVar) {
+      return {
+        uygun: true,
+        baslik: haber.baslik,
+        slug: haberSlug(haber),
+        kapakBasligi: kapakIcinKisalt(haber.baslik),
+        ozet: null,
+        html: govdeToHtml(haber),
+        kategori: kategoriTahmin(haber.baslik, haber.govde, slugs),
+        metaBaslik: null,
+        metaAciklama: null,
+      };
+    }
+    const yazi = await haberiYenidenYaz(haber, slugs);
+    return {
+      uygun: yazi.uygun,
+      baslik: yazi.baslik,
+      slug: slugify(yazi.baslik),
+      kapakBasligi: yazi.kapakBasligi,
+      ozet: yazi.ozet,
+      html: yenidenYazilmisHtml(yazi),
+      kategori: yazi.kategori,
+      metaBaslik: yazi.metaBaslik,
+      metaAciklama: yazi.metaAciklama,
+    };
+  };
 
   const isle = async (haber: (typeof adaylar)[number]) => {
     try {
-      const yazi = await haberiYenidenYaz(
-        haber,
-        kategoriler.map((c) => c.slug)
-      );
+      const yazi = await hazirla(haber);
       if (!yazi.uygun) {
         sonuc.elenen += 1;
         hafiza.add(haber.link);
         return;
       }
       const kategori = kategoriler.find((c) => c.slug === yazi.kategori);
-      const slug = slugify(yazi.baslik);
+      const slug = yazi.slug;
       const png = await kapakUret(yazi.kapakBasligi, kategori?.name ?? "Emekli Haberleri");
       const coverUrl = await kapakYukle(tenantId, slug, png);
 
@@ -110,7 +139,7 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
         title: yazi.baslik,
         slug,
         excerpt: yazi.ozet,
-        content_html: yenidenYazilmisHtml(yazi),
+        content_html: yazi.html,
         cover_url: coverUrl,
         cover_alt: yazi.kapakBasligi,
         category_id: kategori?.id ?? null,
@@ -140,6 +169,6 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
   };
   await updateTenantSettings(tenantId, settings);
 
-  sonuc.mesaj = `${tarama.tarandi} sayfa okundu, ${adaylar.length} emekli haberi, ${sonuc.taslaklar.length} taslak, ${sonuc.elenen} elendi, ${sonuc.hatalar.length} hata.`;
+  sonuc.mesaj = `[${sonuc.mod}] ${tarama.tarandi} sayfa okundu, ${adaylar.length} emekli haberi, ${sonuc.taslaklar.length} taslak, ${sonuc.elenen} elendi, ${sonuc.hatalar.length} hata.`;
   return sonuc;
 }

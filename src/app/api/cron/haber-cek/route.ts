@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-/** Vercel Cron her çağrıda `Authorization: Bearer $CRON_SECRET` gönderir. */
+/** GitHub Actions (.github/workflows/haber-cek.yml) `Authorization: Bearer $CRON_SECRET` ile çağırır. */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
