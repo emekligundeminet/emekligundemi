@@ -14,6 +14,21 @@ const STATUS_LABEL: Record<ArticleStatus, string> = {
   published: "Yayında",
 };
 
+const TARIH_SAAT = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: "Europe/Istanbul",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function tarihSaat(iso: string | null | undefined) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "—" : TARIH_SAAT.format(d);
+}
+
 function statusClass(status: ArticleStatus) {
   if (status === "published") return "rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700";
   if (status === "review") return "rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700";
@@ -115,7 +130,7 @@ export function AdminEntryList() {
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
+            <table className="w-full min-w-[780px] text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
                   <th className="pt-0 pr-4 pb-3 text-left text-xs font-semibold tracking-wider text-slate-400 uppercase">
@@ -126,6 +141,9 @@ export function AdminEntryList() {
                   </th>
                   <th className="pt-0 pr-4 pb-3 text-left text-xs font-semibold tracking-wider text-slate-400 uppercase">
                     Durum
+                  </th>
+                  <th className="pt-0 pr-4 pb-3 text-left text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                    Çekilme / Ekleme
                   </th>
                   <th className="w-36 pt-0 pr-0 pb-3 text-right text-xs font-semibold tracking-wider text-slate-400 uppercase" />
                 </tr>
@@ -140,6 +158,12 @@ export function AdminEntryList() {
                     <td className="py-3 pr-4 text-slate-500">{a.category_name ?? "—"}</td>
                     <td className="py-3 pr-4">
                       <span className={statusClass(a.status)}>{STATUS_LABEL[a.status]}</span>
+                    </td>
+                    <td className="py-3 pr-4 whitespace-nowrap text-slate-500 tabular-nums">
+                      {tarihSaat(a.created_at)}
+                      {a.status === "published" && a.published_at ? (
+                        <span className="block text-xs text-slate-400">Yayın: {tarihSaat(a.published_at)}</span>
+                      ) : null}
                     </td>
                     <td className="py-3 text-right">
                       <div className="flex items-center justify-end gap-2">

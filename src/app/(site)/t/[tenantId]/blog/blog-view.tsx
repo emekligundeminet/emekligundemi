@@ -59,8 +59,9 @@ export async function BlogIndexView({ tenantId, page }: Args) {
         name={BLOG_INDEX_TITLE}
         slug="blog"
         description="Emeklilik rehberi ve kalıcı yazılar."
-        featured={page === 1 ? cards.slice(0, 1) : []}
-        initialMore={page === 1 ? cards.slice(1) : cards}
+        featured={[]}
+        initialMore={cards}
+        infiniteEndpoint="/api/blog"
         total={total}
         page={page}
         pageSize={pageSize}

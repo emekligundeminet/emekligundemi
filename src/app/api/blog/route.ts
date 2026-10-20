@@ -19,11 +19,11 @@ export async function GET(request: Request) {
   try {
     const { articles, total } = await getPublishedArticles(tenant.tenant_id, {
       contentType: "guide",
-      limit: offset + limit,
+      limit,
+      offset,
     });
-    const page = articles.slice(offset, offset + limit);
     return NextResponse.json({
-      articles: page.map(toArticleCard),
+      articles: articles.map(toArticleCard),
       total,
       offset,
       limit,

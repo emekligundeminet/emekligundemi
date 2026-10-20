@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryFeedMore, GridCard } from "@/components/category-feed-more";
 import { AdSlot } from "@/components/ad-slot";
 import { CoverMedia } from "@/components/cover-media";
 import { FeedPagination } from "@/components/feed-pagination";
@@ -55,6 +56,7 @@ export function CategoryFeed({
   heroSlides,
   heroSide,
   categories,
+  infiniteEndpoint,
 }: {
   name: string;
   slug: string;
@@ -69,6 +71,8 @@ export function CategoryFeed({
   heroSlides?: Article[];
   heroSide?: Article[];
   categories?: Category[];
+  /** Verilirse sayfa numaraları yerine aşağı kaydırdıkça yükleme yapılır. */
+  infiniteEndpoint?: string;
 }) {
   const hasHero = (heroSlides?.length ?? 0) > 0;
   const [lead, ...restFeatured] = featured;
@@ -132,18 +136,36 @@ export function CategoryFeed({
 
           {rest.length > 0 ? (
             <section className="mt-8 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-              {rest.map((card) => (
-                <ListCard key={card.id} card={card} logoSrc={logoSrc} />
-              ))}
+              {rest.map((card) =>
+                infiniteEndpoint ? (
+                  <GridCard key={card.id} card={card} logoSrc={logoSrc} />
+                ) : (
+                  <ListCard key={card.id} card={card} logoSrc={logoSrc} />
+                )
+              )}
             </section>
           ) : null}
 
-          <FeedPagination
-            basePath={basePath ?? (slug === "blog" ? "/blog" : `/kategori/${slug}`)}
-            page={page}
-            total={total}
-            pageSize={pageSize}
-          />
+          {infiniteEndpoint ? (
+            <CategoryFeedMore
+              slug={slug}
+              endpoint={infiniteEndpoint}
+              initialCount={(page - 1) * pageSize + featured.length + initialMore.length}
+              total={total}
+              logoSrc={logoSrc}
+              auto
+            />
+          ) : null}
+
+          {/* Sonsuz kaydırmada numaralar yalnızca tarayıcı botları için (gizli) kalır. */}
+          <div className={infiniteEndpoint ? "sr-only" : undefined}>
+            <FeedPagination
+              basePath={basePath ?? (slug === "blog" ? "/blog" : `/kategori/${slug}`)}
+              page={page}
+              total={total}
+              pageSize={pageSize}
+            />
+          </div>
         </>
       )}
     </div>
