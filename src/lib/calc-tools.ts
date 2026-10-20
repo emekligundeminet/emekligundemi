@@ -15,6 +15,11 @@ export type CalcTool = {
 
 export const CALC_TOOLS: CalcTool[] = [
   {
+    id: "emeklilik-tarihi",
+    path: "/araclar/ne-zaman-emekli-olurum",
+    title: "Ne Zaman Emekli Olurum?",
+  },
+  {
     id: "emekli-maasi",
     path: PENSION_TOOL_PATH,
     title: "Emekli Maaşı Hesaplama",

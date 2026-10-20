@@ -33,6 +33,7 @@ export const VARSAYILAN_IC_LINKLER: IcLinkKaydi[] = [
   { id: "haciz", kelimeler: "emekli maaşına haciz, maaşına haciz", hedef: "/blog/emekli-maasina-haciz-gelir-mi-hangi-durumlarda-kesinti-yapilir", ekler: true, aktif: true },
   { id: "ikramiye", kelimeler: "bayram ikramiyesi", hedef: "/araclar/emekli-bayram-ikramiyesi", ekler: true, aktif: true },
   { id: "alim-gucu", kelimeler: "alım gücü", hedef: "/araclar/alim-gucu-kaybi", ekler: true, aktif: true },
+  { id: "emeklilik-tarihi", kelimeler: "ne zaman emekli olurum, emeklilik tarihi, emeklilik yaşı", hedef: "/araclar/ne-zaman-emekli-olurum", ekler: true, aktif: true },
   { id: "zam", kelimeler: "emekli zammı, emekli zam oranı, emekliye ocak zammı, emekliye temmuz zammı", hedef: "/araclar/emekli-zam-hesaplama", ekler: true, aktif: true },
   { id: "en-dusuk", kelimeler: "en düşük emekli maaşı, en düşük emekli aylığı", hedef: "/kategori/emekli-maasi", ekler: true, aktif: true },
   { id: "promosyon", kelimeler: "emekli promosyonu, banka promosyonu", hedef: "/kategori/promosyon", ekler: true, aktif: true },

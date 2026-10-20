@@ -39,6 +39,7 @@ const ICERIK = [
   { href: "/araclar/emekli-zam-hesaplama", label: "Emekli Zam Hesaplama" },
   { href: "/araclar/emekli-bayram-ikramiyesi", label: "Bayram İkramiyesi" },
   { href: "/araclar/alim-gucu-kaybi", label: "Alım Gücü Kaybı" },
+  { href: "/araclar/ne-zaman-emekli-olurum", label: "Ne Zaman Emekli Olurum?" },
 ] as const;
 
 const YASAL = [

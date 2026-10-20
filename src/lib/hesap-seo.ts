@@ -127,3 +127,25 @@ TÜFE ortalama fiyat düzeyini yansıtır. Kira, gıda veya ilaç harcamaları k
 
 Endeks serisi TÜİK'in açıkladığı aylık TÜFE verisidir ve her yeni bültende güncellenir. Sayfa yatırım veya hukuki tavsiye niteliği taşımaz.
 `;
+
+export const SEO_EMEKLILIK_TARIHI = `
+## Ne zaman emekli olurum?
+
+Emeklilik tarihi; statünüze (SSK, Bağ-Kur, memur), cinsiyetinize, ilk sigorta giriş tarihinize ve prim gününüze göre değişir. Araç bu bilgilerle hangi şartları taşıdığınızı ve kalan şartların hangi gün dolacağını gösterir. Belirleyici olan, en son tamamlanan şarttır.
+
+### 8 Eylül 1999 ve öncesi girişliler (EYT)
+
+Bu tarihten önce sigortalı olanlar için yaş şartı aranmaz. SSK'lı kadın 20, erkek 25 yıl sigortalılık süresini ve giriş tarihine göre 5000 ile 5975 gün arasında değişen prim gününü doldurunca emekli olur. Bağ-Kur'lu ve memurda kadın 20, erkek 25 tam yıl prim veya hizmet gerekir.
+
+### 8 Eylül 1999 – 30 Nisan 2008 arası girişliler
+
+SSK'lılar kadın 58, erkek 60 yaşında 7000 prim günüyle emekli olur. 25 yıl sigortalılık süresi ve 4500 günle aynı yaşta kısmi emeklilik de mümkündür. Bağ-Kur ve memurlarda 58/60 yaş ile 25 tam yıl prim aranır.
+
+### 1 Mayıs 2008 ve sonrası girişliler
+
+SSK'lılar 7200, Bağ-Kur'lular ve memurlar 9000 prim günüyle kadın 58, erkek 60 yaşında emekli olur. Prim günü 2036'dan sonra dolarsa yaş her iki yılda bir artar ve 2048'den itibaren herkes için 65 olur. 5400 günle, yaş sınırına üç yıl eklenerek de emekli olunabilir.
+
+## Sonuç kesin mi?
+
+Hayır, araç tahmin üretir. Borçlanma, yurt dışı hizmeti, fiili hizmet zammı ve son 7 yıldaki statü tarihinizi değiştirebilir. Kesin bilgi için e-Devlet'teki "Normal Şartlarda Ne Zaman Emekli Olabilirim?" hizmetine bakın.
+`;

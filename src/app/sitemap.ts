@@ -15,6 +15,7 @@ const STATIC_PATHS = [
   "/araclar/emekli-zam-hesaplama",
   "/araclar/emekli-bayram-ikramiyesi",
   "/araclar/alim-gucu-kaybi",
+  "/araclar/ne-zaman-emekli-olurum",
   "/iletisim",
   "/kunye",
   "/reklam",
