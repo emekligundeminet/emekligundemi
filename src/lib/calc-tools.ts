@@ -2,6 +2,7 @@ import { PENSION_TOOL_PATH } from "@/lib/site";
 
 /**
  * Hesaplama araçları. Yeni araç: buraya satır + `app/(site)/t/[tenantId]/araclar/...`.
+ * Sayfa altı SEO yazısı `lib/hesap-seo.ts` içine (## h2, ### h3, paragraf).
  * Kart şeridi (haber altı manşet düzeni) bu listeden okur.
  */
 export type CalcTool = {

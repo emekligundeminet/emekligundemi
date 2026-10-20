@@ -2,7 +2,7 @@ import { CalcToolPage } from "@/components/calc-tool-page";
 import { ZamTool } from "@/components/zam-tool";
 import { cachedBlogArticles, cachedCategoryPage, cachedSiteMeta } from "@/lib/cached-public";
 import { getParams } from "@/lib/hesap-params";
-import { SEO_ZAM } from "@/lib/hesap-seo";
+import { seoZam } from "@/lib/hesap-seo";
 import { asString } from "@/lib/hesap-formulas";
 import { absolutePath } from "@/lib/site-meta";
 import { notFound } from "next/navigation";
@@ -48,7 +48,7 @@ export default async function EmekliZamPage({
     getParams(),
   ]);
   if (!site) notFound();
-  const seo = asString(map.seo_zam) || SEO_ZAM;
+  const seo = asString(map.seo_zam) || seoZam(map);
   const canonical = absolutePath(site.origin, PATH);
   const jsonLd = {
     "@context": "https://schema.org",

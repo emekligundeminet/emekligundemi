@@ -3,7 +3,7 @@ import { IkramiyeTool } from "@/components/ikramiye-tool";
 import { cachedBlogArticles, cachedCategoryPage, cachedSiteMeta } from "@/lib/cached-public";
 import { asString } from "@/lib/hesap-formulas";
 import { getParams } from "@/lib/hesap-params";
-import { SEO_IKRAMIYE } from "@/lib/hesap-seo";
+import { seoIkramiye } from "@/lib/hesap-seo";
 import { absolutePath } from "@/lib/site-meta";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -62,7 +62,7 @@ export default async function IkramiyePage({
     <CalcToolPage
       title={TITLE}
       lead={DESC}
-      seo={asString(map.seo_ikramiye) || SEO_IKRAMIYE}
+      seo={asString(map.seo_ikramiye) || seoIkramiye(map)}
       jsonLd={jsonLd}
       currentPath={PATH}
       relatedNews={kat?.articles ?? []}

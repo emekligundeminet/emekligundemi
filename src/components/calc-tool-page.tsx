@@ -1,5 +1,6 @@
 import { ArticleMansetStrip, articlesToMansetCards } from "@/components/article-manset-strip";
 import { AracKartlari } from "@/components/article-tool-box";
+import { SeoMetin } from "@/components/seo-metin";
 import { calcToolsExcept } from "@/lib/calc-tools";
 import { articlePath } from "@/lib/site";
 import type { Article } from "@/types/article";
@@ -50,10 +51,7 @@ export function CalcToolPage({
         </h1>
         <p className="mt-3 text-[16px] leading-relaxed text-neutral-600">{lead}</p>
         <div className="mt-6">{children}</div>
-        <section className="mt-10 pt-8">
-          <h2 className="text-xl font-extrabold text-neutral-900">Nasıl hesaplanır?</h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-neutral-700">{seo}</p>
-        </section>
+        <SeoMetin metin={seo} />
       </div>
       <div className="mx-auto max-w-3xl">
         <AracKartlari araclar={digerAraclar} baslik="Diğer hesaplama araçları" className="mt-10" />
