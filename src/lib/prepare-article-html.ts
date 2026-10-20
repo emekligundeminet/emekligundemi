@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import { pickTocItems, stampHeadingIds, type TocItem } from "@/lib/article-toc";
-import { icLinkleriEkle } from "@/lib/ic-link";
+import { icLinkleriEkle, type IcLinkAyari } from "@/lib/ic-link";
 
 const FALLBACK_W = 16;
 const FALLBACK_H = 9;
@@ -15,7 +15,10 @@ function positiveInt(value: string | undefined): number | null {
  * Public render: boyutsuz <img> için oran kilidi + lazy.
  * src/anlam değişmez; yalnız eksik attribute eklenir.
  */
-export function prepareArticleHtml(html: string, opts: { icLinkYolu?: string } = {}): string {
+export function prepareArticleHtml(
+  html: string,
+  opts: { icLinkYolu?: string; icLinkAyari?: IcLinkAyari } = {}
+): string {
   const trimmed = html.trim();
   if (!trimmed) return html;
 
@@ -53,7 +56,7 @@ export function prepareArticleHtml(html: string, opts: { icLinkYolu?: string } =
 
   stampHeadingIds($);
   // Kayıtlı içeriğe dokunmadan, yalnız gösterimde iç link eklenir.
-  if (opts.icLinkYolu) icLinkleriEkle($, opts.icLinkYolu);
+  if (opts.icLinkYolu) icLinkleriEkle($, opts.icLinkYolu, opts.icLinkAyari);
 
   return $.html();
 }

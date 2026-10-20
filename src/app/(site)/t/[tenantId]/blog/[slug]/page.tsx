@@ -8,7 +8,7 @@ import { absolutePath, toAbsoluteUrl } from "@/lib/site-meta";
 import { articleJsonLdByType } from "@/lib/public-article-url";
 import { articleSocialMeta, wordCountFromHtml } from "@/lib/seo";
 import { isGuide } from "@/lib/content-type";
-import { cachedArticle, cachedBlogArticles, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
+import { cachedArticle, cachedIcLinkAyari, cachedBlogArticles, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -61,9 +61,10 @@ export async function generateMetadata({
 
 export default async function BlogArticlePage({ params }: { params: Promise<Params> }) {
   const { tenantId, slug } = await params;
-  const [site, article] = await Promise.all([
+  const [site, article, icLinkAyari] = await Promise.all([
     cachedSiteMeta(tenantId),
     cachedArticle(tenantId, slug),
+    cachedIcLinkAyari(tenantId),
   ]);
   if (!site || !article) notFound();
   if (!isGuide(article.type)) {
@@ -125,6 +126,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
       />
       <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <ReaderArticleBlock
+          icLinkAyari={icLinkAyari}
           article={article}
           siteName={site.name}
           articleUrl={canonical}

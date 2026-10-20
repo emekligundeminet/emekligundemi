@@ -1,4 +1,6 @@
 import "server-only";
+import { icLinkAyarlari } from "@/lib/ic-link";
+import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
 
 import { unstable_cache } from "next/cache";
 import { cacheTags } from "@/lib/cache-tags";
@@ -167,5 +169,22 @@ export function cachedArchiveYears(tenantId: string) {
     async () => groupArchiveMonths(await listPublishedAt(tenantId)),
     ["pub-archive-years", tenantId],
     { revalidate: FEED_REVALIDATE, tags: [tags.articles] }
+  )();
+}
+
+/** Panelden yönetilen iç link kuralları (Site → İç linkler). Kayıtta home etiketi yenilenir. */
+export function cachedIcLinkAyari(tenantId: string) {
+  const tags = cacheTags(tenantId);
+  return unstable_cache(
+    async () => {
+      const { data } = await createSupabaseAdminClient()
+        .from("tenants")
+        .select("settings")
+        .eq("id", tenantId)
+        .single();
+      return icLinkAyarlari(data?.settings);
+    },
+    ["pub-ic-link", tenantId],
+    { revalidate: ARTICLE_REVALIDATE, tags: [tags.home] }
   )();
 }

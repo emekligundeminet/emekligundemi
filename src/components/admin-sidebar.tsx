@@ -18,6 +18,7 @@ import {
   Stamp,
   Scale,
   Images,
+  Link2,
 } from "lucide-react";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import type { TenantRole } from "@/types/tenant-role";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/admin/sources", label: "Kaynaklar", icon: Newspaper },
   { href: "/admin/articles", label: "Haberler", icon: FileText },
   { href: "/admin/stok", label: "Stok görseller", icon: Images },
+  { href: "/admin/ic-linkler", label: "İç linkler", icon: Link2 },
   { href: "/admin/parametreler", label: "Hesap parametreleri", icon: Calculator },
   { href: "/admin/kunye", label: "Künye", icon: Stamp },
   { href: "/admin/yasal", label: "Yasal sayfalar", icon: Scale },
@@ -50,7 +52,8 @@ export function AdminSidebar({ role }: { role?: TenantRole }) {
               (item.href === "/admin/settings" ||
                 item.href === "/admin/parametreler" ||
                 item.href === "/admin/kunye" ||
-                item.href === "/admin/yasal")
+                item.href === "/admin/yasal" ||
+                item.href === "/admin/ic-linkler")
             )
         )
         .map((item) => {

@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import * as cheerio from "cheerio";
-import { icLinkleriEkle } from "./ic-link";
+import { icLinkAyarlari, icLinkleriEkle, VARSAYILAN_IC_LINKLER, type IcLinkKaydi } from "./ic-link";
 
-const isle = (html: string, yol = "/bir-haber", max?: number) => {
+const isle = (html: string, yol = "/bir-haber", max = 5, kayitlar: IcLinkKaydi[] = VARSAYILAN_IC_LINKLER) => {
   const $ = cheerio.load(html, undefined, false);
-  const n = icLinkleriEkle($, yol, max);
+  const n = icLinkleriEkle($, yol, { kayitlar, max });
   return { html: $.html(), n };
 };
 
@@ -37,9 +37,11 @@ test("kelimenin ortasında eşleşmez", () => {
   assert.equal(n, 0);
 });
 
-test("haber başına en fazla 3 link", () => {
+test("sayfa başına link sınırı uygulanır", () => {
   const { n } = isle(
-    "<p>Emekli zammı belli oldu. Bayram ikramiyesi arttı. Alım gücü düştü. En düşük emekli aylığı yükseldi. Banka promosyonu arttı.</p>"
+    "<p>Emekli zammı belli oldu. Bayram ikramiyesi arttı. Alım gücü düştü. En düşük emekli aylığı yükseldi. Banka promosyonu arttı.</p>",
+    "/x",
+    3
   );
   assert.equal(n, 3);
 });
@@ -47,4 +49,40 @@ test("haber başına en fazla 3 link", () => {
 test("HTML özel karakterleri korunur", () => {
   const { html } = isle("<p>A &amp; B: bayram ikramiyesi &lt;yüksek&gt;</p>");
   assert.match(html, /A &amp; B: <a [^>]*>bayram ikramiyesi<\/a> &lt;yüksek&gt;/);
+});
+
+const k = (kelimeler: string, hedef: string, ekler = true): IcLinkKaydi => ({ id: hedef, kelimeler, hedef, ekler, aktif: true });
+
+test("kelime 4 kez geçse de yalnız ilk geçtiği yer linklenir", () => {
+  const { html, n } = isle(
+    "<p>Rehber yazısı. İkinci rehber.</p><p>Rehber üç. Rehber dört.</p>",
+    "/x",
+    5,
+    [k("rehber", "/blog/a")]
+  );
+  assert.equal(n, 1);
+  assert.match(html, /^<p><a href="\/blog\/a">Rehber<\/a> yazısı\./);
+});
+
+test("Türkçe büyük İ / küçük i eşleşir", () => {
+  const { n } = isle("<p>EMEKLİ ZAMMI açıklandı.</p>", "/x", 5, [k("emekli zammı", "/araclar/z")]);
+  assert.equal(n, 1);
+});
+
+test("ekler kapalıyken ekli kelime eşleşmez", () => {
+  assert.equal(isle("<p>Promosyonları gördünüz mü?</p>", "/x", 5, [k("promosyon", "/k", false)]).n, 0);
+  assert.equal(isle("<p>Promosyon arttı.</p>", "/x", 5, [k("promosyon", "/k", false)]).n, 1);
+});
+
+test("uzun ifade kısa olandan önce bağlanır", () => {
+  const { html } = isle("<p>En düşük emekli maaşı arttı.</p>", "/x", 5, [k("emekli maaşı", "/kisa"), k("en düşük emekli maaşı", "/uzun")]);
+  assert.match(html, /href="\/uzun">En düşük emekli maaşı</);
+});
+
+test("pasif kural ve geçersiz hedef kullanılmaz; ayar yoksa varsayılan gelir", () => {
+  const ayar = icLinkAyarlari({ icLinkler: [{ kelimeler: "zam", hedef: "https://emekliler.org/araclar/z/", aktif: false }, { kelimeler: "x", hedef: "javascript:alert(1)" }], icLinkMax: 99 });
+  assert.equal(ayar.kayitlar.length, 1);
+  assert.equal(ayar.kayitlar[0].hedef, "/araclar/z");
+  assert.equal(ayar.max, 5);
+  assert.equal(icLinkAyarlari({}).kayitlar, VARSAYILAN_IC_LINKLER);
 });

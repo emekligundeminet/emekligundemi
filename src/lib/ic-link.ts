@@ -2,63 +2,97 @@ import type { CheerioAPI } from "cheerio";
 import type { AnyNode, Text } from "domhandler";
 
 /**
- * Otomatik iç link: haber metninde geçen kalıp ifadeleri ilgili araç,
- * rehber veya kategori sayfasına bağlar. Yapay zeka yok, kelime tablosu.
+ * Otomatik iç link (WordPress "Internal Link Juicer" benzeri).
+ * Kurallar panelden (Site → İç linkler) yönetilir, tenant ayarlarında
+ * `icLinkler` olarak durur; hiç kaydedilmemişse VARSAYILAN_IC_LINKLER kullanılır.
  *
- * Kurallar:
- * - Her hedefe en fazla 1 link, haber başına en fazla İC_LINK_MAX link.
- * - Yalnız paragraf/listede; başlık, mevcut link ve tablo başlığına dokunmaz.
- * - Sayfa kendine ve metinde zaten linklenmiş hedefe link vermez.
- * - Sıra önemli: özel ifade genelden önce gelir.
- *
- * Yeni kural: tabloya satır ekleyin. `desen` kelimenin başından eşleşir;
- * Türkçe ekleri (`\p{L}*`) kalıbın sonuna yazın ki "ikramiyesini" bütün bağlansın.
+ * - Her anahtar kelime sayfada yalnız İLK geçtiği yerde linklenir.
+ * - Aynı hedefe sayfada tek link; sayfa başına en fazla `max` link.
+ * - Yalnız paragraf/listede; başlık, mevcut link ve sayfanın kendisi atlanır.
+ * - Uzun ifade önce denenir ("en düşük emekli maaşı" > "emekli maaşı").
+ * - Kayıtlı içerik değişmez; link gösterim anında eklenir.
  */
-export const IC_LINK_MAX = 3;
 
-type IcLinkKurali = { desen: RegExp; hedef: string; baslik: string };
+export type IcLinkKaydi = {
+  id: string;
+  /** Virgülle ayrılmış ifadeler: "emekli zammı, emekli zam oranı" */
+  kelimeler: string;
+  /** Site içi yol: "/araclar/emekli-zam-hesaplama" */
+  hedef: string;
+  /** true: Türkçe ekleri de kapsar ("ikramiyesi" → "ikramiyesini"). */
+  ekler: boolean;
+  aktif: boolean;
+};
 
-const EK = String.raw`\p{L}*`;
-const kalip = (govde: string) =>
-  new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${govde})`, "iu");
+export type IcLinkAyari = { kayitlar: IcLinkKaydi[]; max: number };
 
-export const IC_LINK_KURALLARI: IcLinkKurali[] = [
-  {
-    desen: kalip(String.raw`emekli (?:maaşı|aylığı) hesapla${EK}`),
-    hedef: "/araclar/emekli-maasi-hesaplama",
-    baslik: "Emekli maaşı hesaplama",
-  },
-  {
-    desen: kalip(String.raw`maaşına haciz${EK}|emekli maaşı(?:na)? haciz${EK}`),
-    hedef: "/blog/emekli-maasina-haciz-gelir-mi-hangi-durumlarda-kesinti-yapilir",
-    baslik: "Emekli maaşına haciz gelir mi?",
-  },
-  {
-    desen: kalip(String.raw`bayram ikramiye${EK}`),
-    hedef: "/araclar/emekli-bayram-ikramiyesi",
-    baslik: "Bayram ikramiyesi hesaplama",
-  },
-  {
-    desen: kalip(String.raw`alım gücü${EK}`),
-    hedef: "/araclar/alim-gucu-kaybi",
-    baslik: "Alım gücü kaybı hesaplama",
-  },
-  {
-    desen: kalip(String.raw`emekli zam oran${EK}|emekli zamm${EK}|emekliye (?:ocak|temmuz) zamm${EK}`),
-    hedef: "/araclar/emekli-zam-hesaplama",
-    baslik: "Emekli zam hesaplama",
-  },
-  {
-    desen: kalip(String.raw`en düşük emekli (?:maaşı|aylığı)${EK}`),
-    hedef: "/kategori/emekli-maasi",
-    baslik: "Emekli maaşı haberleri",
-  },
-  {
-    desen: kalip(String.raw`emekli promosyon${EK}|banka promosyon${EK}|promosyon (?:tutar|kampanya)${EK}`),
-    hedef: "/kategori/promosyon",
-    baslik: "Emekli promosyonu haberleri",
-  },
+export const IC_LINK_MAX = 5;
+
+export const VARSAYILAN_IC_LINKLER: IcLinkKaydi[] = [
+  { id: "maas-hesap", kelimeler: "emekli maaşı hesaplama, emekli aylığı hesaplama", hedef: "/araclar/emekli-maasi-hesaplama", ekler: true, aktif: true },
+  { id: "haciz", kelimeler: "emekli maaşına haciz, maaşına haciz", hedef: "/blog/emekli-maasina-haciz-gelir-mi-hangi-durumlarda-kesinti-yapilir", ekler: true, aktif: true },
+  { id: "ikramiye", kelimeler: "bayram ikramiyesi", hedef: "/araclar/emekli-bayram-ikramiyesi", ekler: true, aktif: true },
+  { id: "alim-gucu", kelimeler: "alım gücü", hedef: "/araclar/alim-gucu-kaybi", ekler: true, aktif: true },
+  { id: "zam", kelimeler: "emekli zammı, emekli zam oranı, emekliye ocak zammı, emekliye temmuz zammı", hedef: "/araclar/emekli-zam-hesaplama", ekler: true, aktif: true },
+  { id: "en-dusuk", kelimeler: "en düşük emekli maaşı, en düşük emekli aylığı", hedef: "/kategori/emekli-maasi", ekler: true, aktif: true },
+  { id: "promosyon", kelimeler: "emekli promosyonu, banka promosyonu", hedef: "/kategori/promosyon", ekler: true, aktif: true },
 ];
+
+function hedefNormal(hedef: string) {
+  const t = hedef.trim().replace(/^https?:\/\/[^/]+/i, "").split(/[?#]/)[0];
+  if (!t.startsWith("/")) return null;
+  return t.length > 1 ? t.replace(/\/+$/, "") : t;
+}
+
+/** Ayarlardan güvenli kayıt listesi; kayıt yoksa varsayılanlar. */
+export function icLinkAyarlari(settings: unknown): IcLinkAyari {
+  const rec = settings && typeof settings === "object" && !Array.isArray(settings) ? (settings as Record<string, unknown>) : {};
+  const ham = rec.icLinkler;
+  const maxHam = Number(rec.icLinkMax);
+  const max = Number.isFinite(maxHam) && maxHam >= 1 && maxHam <= 20 ? Math.round(maxHam) : IC_LINK_MAX;
+  if (!Array.isArray(ham)) return { kayitlar: VARSAYILAN_IC_LINKLER, max };
+  const kayitlar: IcLinkKaydi[] = [];
+  for (const r of ham) {
+    if (!r || typeof r !== "object") continue;
+    const o = r as Record<string, unknown>;
+    const kelimeler = typeof o.kelimeler === "string" ? o.kelimeler.slice(0, 500) : "";
+    const hedef = typeof o.hedef === "string" ? hedefNormal(o.hedef) : null;
+    if (!kelimeler.trim() || !hedef) continue;
+    kayitlar.push({
+      id: typeof o.id === "string" && o.id ? o.id.slice(0, 40) : Math.random().toString(36).slice(2, 10),
+      kelimeler,
+      hedef,
+      ekler: o.ekler !== false,
+      aktif: o.aktif !== false,
+    });
+  }
+  return { kayitlar: kayitlar.slice(0, 300), max };
+}
+
+const TR: Record<string, string> = { i: "[iİ]", "İ": "[iİ]", ı: "[ıI]", I: "[ıI]" };
+const kacisRegex = (c: string) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** "emekli zammı" → Türkçe büyük/küçük harf duyarsız, kelime başından eşleşen desen. */
+export function kelimeDeseni(kelime: string, ekler: boolean) {
+  const govde = [...kelime.trim().replace(/\s+/g, " ")]
+    .map((c) => (c === " " ? String.raw`\s+` : (TR[c] ?? kacisRegex(c))))
+    .join("");
+  const son = ekler ? String.raw`\p{L}*` : String.raw`(?![\p{L}\p{N}])`;
+  return new RegExp(String.raw`(?<![\p{L}\p{N}])${govde}${son}`, "iu");
+}
+
+type Derlenmis = { desen: RegExp; hedef: string; uzunluk: number };
+
+function derle(kayitlar: IcLinkKaydi[]): Derlenmis[] {
+  const out: Derlenmis[] = [];
+  for (const k of kayitlar) {
+    if (!k.aktif) continue;
+    for (const kelime of k.kelimeler.split(",").map((x) => x.trim()).filter(Boolean)) {
+      out.push({ desen: kelimeDeseni(kelime, k.ekler), hedef: k.hedef, uzunluk: kelime.length });
+    }
+  }
+  return out.sort((a, b) => b.uzunluk - a.uzunluk);
+}
 
 const KAPSAM = "p, li";
 const YASAK_ATA = "a, h1, h2, h3, h4, h5, h6, th, figcaption, button";
@@ -80,25 +114,28 @@ function metinDugumleri($: CheerioAPI): Text[] {
   return out.filter((t) => !$(t).parents(YASAK_ATA).length);
 }
 
-/** prepareArticleHtml'in açtığı cheerio belgesine iç linkleri ekler. */
-export function icLinkleriEkle($: CheerioAPI, mevcutYol: string, max = IC_LINK_MAX) {
+/** prepareArticleHtml'in açtığı cheerio belgesine iç linkleri ekler; eklenen sayıyı döner. */
+export function icLinkleriEkle(
+  $: CheerioAPI,
+  mevcutYol: string,
+  ayar: IcLinkAyari = { kayitlar: VARSAYILAN_IC_LINKLER, max: IC_LINK_MAX }
+) {
   const linkli = new Set(
     $("a[href]")
-      .map((_, a) => ($(a).attr("href") ?? "").replace(/^https?:\/\/[^/]+/, "").split(/[?#]/)[0])
+      .map((_, a) => hedefNormal($(a).attr("href") ?? "") ?? "")
       .get()
   );
+  const kendisi = hedefNormal(mevcutYol);
   let eklenen = 0;
-  for (const kural of IC_LINK_KURALLARI) {
-    if (eklenen >= max) break;
-    if (kural.hedef === mevcutYol || linkli.has(kural.hedef)) continue;
+  for (const kural of derle(ayar.kayitlar)) {
+    if (eklenen >= ayar.max) break;
+    if (kural.hedef === kendisi || linkli.has(kural.hedef)) continue;
     for (const dugum of metinDugumleri($)) {
       const m = kural.desen.exec(dugum.data);
       if (!m) continue;
       const once = dugum.data.slice(0, m.index);
       const sonra = dugum.data.slice(m.index + m[0].length);
-      $(dugum).replaceWith(
-        `${kacis(once)}<a href="${kural.hedef}" title="${kacis(kural.baslik)}">${kacis(m[0])}</a>${kacis(sonra)}`
-      );
+      $(dugum).replaceWith(`${kacis(once)}<a href="${kacis(kural.hedef)}">${kacis(m[0])}</a>${kacis(sonra)}`);
       linkli.add(kural.hedef);
       eklenen += 1;
       break;

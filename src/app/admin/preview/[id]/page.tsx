@@ -7,6 +7,7 @@ import { getArticleByIdForAdmin } from "@/lib/data/articles";
 import { getSiteMeta } from "@/lib/site-meta";
 import { getCategories } from "@/lib/store";
 import { SITE_NAME } from "@/lib/site";
+import { cachedIcLinkAyari } from "@/lib/cached-public";
 
 export const dynamic = "force-dynamic";
 
@@ -21,10 +22,11 @@ export default async function AdminPreviewPage({
     notFound();
   }
   const { id } = await params;
-  const [article, site, categories] = await Promise.all([
+  const [article, site, categories, icLinkAyari] = await Promise.all([
     getArticleByIdForAdmin(ctx.tenantId, id),
     getSiteMeta(),
     getCategories(ctx.tenantId),
+    cachedIcLinkAyari(ctx.tenantId),
   ]);
   if (!article) notFound();
   const siteName = site?.name ?? SITE_NAME;
@@ -41,6 +43,7 @@ export default async function AdminPreviewPage({
       <SiteHeader categories={categories} siteName={siteName} social={site?.social} />
       <div className="mx-auto max-w-3xl px-4 py-8">
         <ReaderArticleBlock
+          icLinkAyari={icLinkAyari}
           article={article}
           siteName={siteName}
           articleUrl={`${(site?.origin ?? "").replace(/\/$/, "")}${article.canonical_path}`}

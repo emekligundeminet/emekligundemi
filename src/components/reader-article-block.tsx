@@ -14,6 +14,7 @@ import { CONTACT_EMAIL } from "@/lib/publisher";
 import { BLOG_INDEX_TITLE, formatNewsDateTime, HOME_TITLE } from "@/lib/site";
 import { articleToc, prepareArticleHtml } from "@/lib/prepare-article-html";
 import { KAPAK_SIZES, kapakSrcSet } from "@/lib/kapak-varyant";
+import type { IcLinkAyari } from "@/lib/ic-link";
 import type { ReaderArticle } from "@/types/reader-article";
 
 type Props = {
@@ -22,6 +23,8 @@ type Props = {
   articleUrl: string;
   followHost?: string;
   priorityCover?: boolean;
+  /** Panelden yönetilen iç link kuralları; yoksa varsayılanlar. */
+  icLinkAyari?: IcLinkAyari;
 };
 
 function sameInstant(a: string, b: string) {
@@ -34,13 +37,17 @@ export function ReaderArticleBlock({
   articleUrl,
   followHost,
   priorityCover = false,
+  icLinkAyari,
 }: Props) {
   const updated =
     article.updated_at && !sameInstant(article.updated_at, article.published_at)
       ? article.updated_at
       : null;
   const guide = isGuide(article.type);
-  const prepared = prepareArticleHtml(article.content_html, { icLinkYolu: article.canonical_path });
+  const prepared = prepareArticleHtml(article.content_html, {
+    icLinkYolu: article.canonical_path,
+    icLinkAyari,
+  });
   const toc = guide ? articleToc(prepared) : [];
 
   if (priorityCover && article.cover_url) {
