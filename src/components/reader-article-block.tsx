@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { preload } from "react-dom";
 import { ArticleSources } from "@/components/article-sources";
+import { ArticleToolBox } from "@/components/article-tool-box";
 import { ArticleToc } from "@/components/article-toc";
 import { ArticleToolbar } from "@/components/article-toolbar";
 import { AuthorByline } from "@/components/author-byline";
@@ -38,7 +39,7 @@ export function ReaderArticleBlock({
       ? article.updated_at
       : null;
   const guide = isGuide(article.type);
-  const prepared = prepareArticleHtml(article.content_html);
+  const prepared = prepareArticleHtml(article.content_html, { icLinkYolu: article.canonical_path });
   const toc = guide ? articleToc(prepared) : [];
 
   if (priorityCover && article.cover_url) {
@@ -133,6 +134,8 @@ export function ReaderArticleBlock({
         className="haber-icerik mt-4"
         dangerouslySetInnerHTML={{ __html: prepared }}
       />
+
+      <ArticleToolBox categorySlug={article.category_slug} />
 
       <ArticleSources kaynaklar={article.kaynaklar} />
 
