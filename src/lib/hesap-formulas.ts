@@ -192,3 +192,27 @@ export function memurZamYuzde(donemTufeYuzde: number, oncekiTsYuzde: number, yen
   const fark = Math.max(0, (1 + donemTufeYuzde / 100) / (1 + oncekiTsYuzde / 100) - 1);
   return ((1 + fark) * (1 + yeniTsYuzde / 100) - 1) * 100;
 }
+
+/** 5510 md. 29: Ekim 2008 sonrası her 360 prim günü için %2 aylık bağlama oranı, en çok %90. */
+export const ABO_HER_360_GUN = 2;
+export const ABO_TAVAN = 90;
+
+/**
+ * Emekli aylığı tahmini (yalnız Ekim 2008 sonrası formül):
+ * aylık = ortalama aylık kazanç (bugünkü TL) × min(%90, prim günü / 360 × %2);
+ * sonuç en düşük aylığın altındaysa taban ödenir.
+ * Kazancın "bugünkü TL" olması, SGK'nın güncelleme katsayısı zincirini yaklaşık karşılar.
+ */
+export function emekliAyligiTahmini(opts: { primGun: number; aylikKazanc: number; taban: number }) {
+  const gun = Math.max(0, Math.floor(opts.primGun));
+  const aboYuzde = Math.min(ABO_TAVAN, (gun / 360) * ABO_HER_360_GUN);
+  const ham = opts.aylikKazanc * (aboYuzde / 100);
+  const tabanda = opts.taban > 0 && ham < opts.taban;
+  return {
+    aboYuzde,
+    aboTavanda: aboYuzde >= ABO_TAVAN,
+    ham,
+    aylik: tabanda ? opts.taban : ham,
+    tabanda,
+  };
+}

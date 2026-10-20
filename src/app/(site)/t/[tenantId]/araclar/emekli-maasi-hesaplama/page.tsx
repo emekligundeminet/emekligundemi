@@ -1,8 +1,9 @@
-import { ArticleMansetStrip, articlesToMansetCards } from "@/components/article-manset-strip";
+import { CalcToolPage } from "@/components/calc-tool-page";
 import { PensionTool } from "@/components/pension-tool";
 import { cachedBlogArticles, cachedCategoryPage, cachedSiteMeta } from "@/lib/cached-public";
-import { calcToolsExcept } from "@/lib/calc-tools";
-import { articlePath, PENSION_TOOL_PATH, SITE_NAME } from "@/lib/site";
+import { asNumber } from "@/lib/hesap-formulas";
+import { getParams } from "@/lib/hesap-params";
+import { PENSION_TOOL_PATH, SITE_NAME } from "@/lib/site";
 import { absolutePath } from "@/lib/site-meta";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -17,7 +18,27 @@ export function generateStaticParams() {
 type Params = { tenantId: string };
 
 const DESC =
-  "Prim gününüz ve kazancınıza göre tahmini emekli maaşınızı hesaplayın. Ücretsiz emekli maaşı hesaplama aracı.";
+  "Prim gününüz ve brüt kazancınızla tahmini emekli maaşınızı üç adımda hesaplayın.";
+
+const SEO = `
+Emekli maaşı, ortalama aylık kazancınızın "aylık bağlama oranı" ile çarpılmasıyla
+bulunur. 1 Ekim 2008'den sonra ilk kez sigortalı olanlar için bu oran 5510 sayılı
+Kanuna göre her 360 prim günü için yüzde 2'dir ve en fazla yüzde 90 olabilir.
+Örneğin 7.200 prim günü (20 yıl) olan birinin oranı yüzde 40'tır; ortalama brüt
+kazancı 75.000 TL ise emekli aylığı yaklaşık 30.000 TL olur. Hesaplanan tutar en
+düşük emekli aylığının altında kalırsa en düşük aylık ödenir; Temmuz 2026'dan
+itibaren bu tutar 23.552 TL'dir.
+
+Araç, kazancı bugünkü parayla girmenizi ister. SGK geçmiş yıllardaki kazançları
+enflasyon ve büyüme oranıyla bugüne taşıdığı için bu yaklaşım sonucu gerçeğe
+yaklaştırır, ancak kesin hesap yerine geçmez.
+
+İlk sigorta girişi Ekim 2008'den önce olanların aylığı, 2000 öncesi ve 2000–2008
+dönemleri için farklı oranlarla, dönemlere bölünerek hesaplanır. Bu kişiler için
+araç yalnızca yaklaşık bir fikir verir. Emekli olabilmek için ayrıca yaş ve prim
+günü şartlarının sağlanması gerekir. Kesin tutarı emeklilik başvurusundan sonra
+SGK hesaplar.
+`.replace(/\s+/g, " ").trim();
 
 export async function generateMetadata({
   params,
@@ -51,33 +72,16 @@ export async function generateMetadata({
 
 export default async function PensionToolPage({ params }: { params: Promise<Params> }) {
   const { tenantId } = await params;
-  const [site, blog, kat] = await Promise.all([
+  const [site, blog, kat, map] = await Promise.all([
     cachedSiteMeta(tenantId),
     cachedBlogArticles(tenantId),
     cachedCategoryPage(tenantId, "emekli-maasi"),
+    getParams(),
   ]);
   if (!site) notFound();
 
   const canonical = absolutePath(site.origin, PENSION_TOOL_PATH);
-  const relatedNews = kat?.articles ?? [];
-  const relatedGuides = blog.articles;
-
-  const toolCards = calcToolsExcept(PENSION_TOOL_PATH).map((t) => ({
-    key: t.id,
-    href: t.path,
-    title: t.title,
-    coverUrl: t.coverUrl,
-    coverAlt: t.coverAlt ?? t.title,
-  }));
-  const seen = new Set(toolCards.map((c) => c.href));
-  const relatedArticles = [...relatedGuides, ...relatedNews].filter((a) => {
-    const href = articlePath(a);
-    if (seen.has(href)) return false;
-    seen.add(href);
-    return true;
-  });
-  const relatedCards = [...toolCards, ...articlesToMansetCards(relatedArticles)].slice(0, 4);
-
+  const taban = asNumber(map.en_dusuk_emekli_ayligi) ?? 0;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -95,45 +99,17 @@ export default async function PensionToolPage({ params }: { params: Promise<Para
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-      />
-
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 md:text-[2.1rem]">
-          Emekli Maaşı Hesaplama
-        </h1>
-        <p className="mt-3 text-[16px] leading-relaxed text-neutral-600">
-          Bu araç tahmini sonuç verir. Kesin emekli maaşınız SGK/e-Devlet hesabınızda görünür.
-          Hesaplama, kamuya açık SGK formülüne dayanır; kişisel durumunuza göre farklılık
-          gösterebilir.
-        </p>
-
-        <div className="mt-6">
-          <PensionTool />
-        </div>
-
-        <section className="mt-10 border-t border-neutral-200 pt-8">
-          <h2 className="text-xl font-extrabold text-neutral-900">Nasıl hesaplanır?</h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-neutral-700">
-            Aylık, üç dönemin kısmi tutarının prim günü ağırlığıyla birleşimidir: 2000 öncesi
-            (gösterge + aylık bağlama oranı), 2000–Eylül 2008 (kazanç × kademeli ABO), Ekim 2008
-            sonrası (kazanç × her 360 gün %2 ABO, tavan %90 — oranlar teyit bekler). Geçmiş kazanç
-            güncelleme katsayılarıyla bugüne taşınır. Katsayı tabloları doldurulmadan araç tutar
-            üretmez; yanlış kesin rakam gösterilmez. Kesin bağlama SGK / e-Devlet kaydınızdadır.
-          </p>
-        </section>
-      </div>
-
-      <div className="mt-10">
-        <ArticleMansetStrip
-          label="Hesaplama araçları"
-          cards={relatedCards}
-          logoSrc={site.logoUrl}
-        />
-      </div>
-    </div>
+    <CalcToolPage
+      title="Emekli Maaşı Hesaplama"
+      lead={DESC}
+      seo={SEO}
+      jsonLd={jsonLd}
+      currentPath={PENSION_TOOL_PATH}
+      relatedNews={kat?.articles ?? []}
+      relatedGuides={blog.articles}
+      logoSrc={site.logoUrl}
+    >
+      <PensionTool taban={taban} />
+    </CalcToolPage>
   );
 }

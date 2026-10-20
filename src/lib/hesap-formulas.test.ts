@@ -135,3 +135,30 @@ describe("dönem zammı", () => {
     assert.equal(Math.round(memurZamYuzde(4, 7, 5) * 100) / 100, 5);
   });
 });
+
+import { emekliAyligiTahmini } from "@/lib/hesap-formulas";
+
+describe("emekli aylığı tahmini (2008 sonrası)", () => {
+  it("7200 gün = 20 yıl → %40 ABO", () => {
+    const r = emekliAyligiTahmini({ primGun: 7200, aylikKazanc: 100000, taban: 23552 });
+    assert.equal(r.aboYuzde, 40);
+    assert.equal(r.aylik, 40000);
+    assert.equal(r.tabanda, false);
+  });
+  it("ABO %90 tavanı aşmaz (16.200 gün = 45 yıl)", () => {
+    const r = emekliAyligiTahmini({ primGun: 20000, aylikKazanc: 100000, taban: 0 });
+    assert.equal(r.aboYuzde, 90);
+    assert.equal(r.aboTavanda, true);
+    assert.equal(r.aylik, 90000);
+  });
+  it("tabanın altı en düşük aylığa çekilir", () => {
+    const r = emekliAyligiTahmini({ primGun: 5400, aylikKazanc: 50000, taban: 23552 });
+    assert.equal(Math.round(r.ham), 15000);
+    assert.equal(r.aylik, 23552);
+    assert.equal(r.tabanda, true);
+  });
+  it("küsuratlı gün oransal işler (3600 gün = %20)", () => {
+    assert.equal(emekliAyligiTahmini({ primGun: 3600, aylikKazanc: 1, taban: 0 }).aboYuzde, 20);
+    assert.equal(emekliAyligiTahmini({ primGun: 3780, aylikKazanc: 1, taban: 0 }).aboYuzde, 21);
+  });
+});
