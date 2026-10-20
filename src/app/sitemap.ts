@@ -32,9 +32,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listYayindaYasal(),
   ]);
 
+  // lastmod gerçek değişiklik tarihi olmalı: her istekte "şimdi" yazılırsa
+  // Google sitemap tarihlerine güvenmeyi bırakır. Bilinmiyorsa hiç yazılmaz.
+  const enSon = (list: typeof articles) =>
+    list.reduce<Date | undefined>((max, a) => {
+      const d = new Date(a.updated_at || a.published_at);
+      return !max || d > max ? d : max;
+    }, undefined);
+  const sonHaber = enSon(articles);
+  const sonRehber = enSon(articles.filter((a) => isGuide(a.type)));
+
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
     url: absolutePath(site.origin, path),
-    lastModified: new Date(),
+    lastModified: path === "/" ? sonHaber : path === "/blog" ? sonRehber : undefined,
     changeFrequency: path === "/" ? "hourly" : "weekly",
     priority: path === "/" ? 1 : 0.5,
   }));
@@ -43,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((kat) => !isReservedBlogIndexSlug(kat.slug))
     .map((kat) => ({
       url: absolutePath(site.origin, `/kategori/${kat.slug}`),
-      lastModified: new Date(),
+      lastModified: enSon(articles.filter((a) => a.category_slug === kat.slug)),
       changeFrequency: "daily",
       priority: 0.7,
     }));
@@ -52,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((row) => !isKurumsalYasalSlug(row.slug))
     .map((row) => ({
       url: absolutePath(site.origin, yasalPath(row.slug)),
-      lastModified: row.guncelleme_tarihi ? new Date(row.guncelleme_tarihi) : new Date(),
+      lastModified: row.guncelleme_tarihi ? new Date(row.guncelleme_tarihi) : undefined,
       changeFrequency: "yearly",
       priority: 0.3,
     }));

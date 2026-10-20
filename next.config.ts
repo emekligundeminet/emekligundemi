@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
   // Kapak üretimi fontları fs ile okur; Vercel paketine dahil edilsin.
   outputFileTracingIncludes: {
     "/api/cron/haber-cek": ["./src/assets/fonts/**"],
+    "/api/admin/stok/kapak": ["./src/assets/fonts/**"],
   },
   async headers() {
     return [

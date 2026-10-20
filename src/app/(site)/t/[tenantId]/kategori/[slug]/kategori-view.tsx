@@ -68,6 +68,8 @@ export async function KategoriView({ tenantId, slug, page }: Args) {
     cachedCategories(tenantId),
   ]);
   if (!data) notFound();
+  // Boş ara sayfa soft-404 olmasın.
+  if (page > 1 && data.articles.length === 0) notFound();
 
   const useHero = page === 1;
   const { slider, side, rest } = useHero

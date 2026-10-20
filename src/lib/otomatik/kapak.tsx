@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 
 /** Discover en az 1200px ister; og:image ile aynı 16:9. */
 export const KAPAK_W = 1600;
@@ -134,5 +135,7 @@ export async function kapakUret(baslik: string, kategori: string, foto?: string 
       ],
     }
   );
-  return Buffer.from(await res.arrayBuffer());
+  // Satori PNG üretir (~1 MB); kapak LCP görseli ve CDN'den doğrudan
+  // sunuluyor, bu yüzden WebP'ye çevrilir (~%85-90 daha küçük).
+  return sharp(Buffer.from(await res.arrayBuffer())).webp({ quality: 80 }).toBuffer();
 }

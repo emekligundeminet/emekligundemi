@@ -48,6 +48,7 @@ export async function YazarView({ tenantId, slug, page }: Args) {
     limit: 24,
     offset: (page - 1) * 24,
   });
+  if (page > 1 && feed.articles.length === 0) notFound();
   const cards = feed.articles.map(toArticleCard);
   const path = authorPath(author.name);
 

@@ -102,15 +102,15 @@ export async function stokVeri(path: string) {
   return `data:${mime};base64,${b64}`;
 }
 
-/** Üretilen kapak PNG'sini yükler; ?w&h ekli URL döner (yayın kontrolü ölçüyü oradan okur). */
-export async function kapakYukle(tenantId: string, slug: string, png: Buffer, w = 1600, h = 900) {
+/** Üretilen kapağı (WebP) yükler; ?w&h ekli URL döner (yayın kontrolü ölçüyü oradan okur). */
+export async function kapakYukle(tenantId: string, slug: string, gorsel: Buffer, w = 1600, h = 900) {
   const supabase = createSupabaseAdminClient();
   const unique = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const stem = slug.slice(0, 60).replace(/-+$/, "") || "kapak";
-  const path = `${tenantId}/${stem}-${unique}.png`;
+  const path = `${tenantId}/${stem}-${unique}.webp`;
   const { error } = await supabase.storage
     .from(STOK_BUCKET)
-    .upload(path, png, { contentType: "image/png", upsert: true });
+    .upload(path, gorsel, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
   if (error) throw new Error(`Kapak yüklenemedi: ${error.message}`);
   const url = new URL(supabase.storage.from(STOK_BUCKET).getPublicUrl(path).data.publicUrl);
   url.searchParams.set("w", String(w));

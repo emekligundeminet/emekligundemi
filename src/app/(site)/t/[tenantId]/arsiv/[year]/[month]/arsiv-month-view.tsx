@@ -59,6 +59,7 @@ export async function ArsivMonthView({ tenantId, year: y, month: m, page }: Args
 
   const title = monthTitle(year, month);
   const path = archiveMonthPath(year, month);
+  if (page > 1 && feed.articles.length === 0) notFound();
   const cards = feed.articles.map(toArticleCard);
 
   return (

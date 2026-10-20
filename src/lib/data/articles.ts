@@ -164,6 +164,10 @@ export async function getPublishedArticles(
   }
 
   const { data, error, count } = await query;
+  // Son sayfanın ötesi (ör. /sayfa/999): PostgREST 416 döner; 500 yerine boş liste.
+  if (error && error.code === "PGRST103") {
+    return { articles: [], done: true, cursor: null, total: count ?? 0 };
+  }
   if (error) fail(error);
   const articles = ((data ?? []) as unknown as Record<string, unknown>[]).map(mapList);
   const last = articles.at(-1);

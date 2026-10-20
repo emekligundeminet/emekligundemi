@@ -37,6 +37,7 @@ export async function BlogIndexView({ tenantId, page }: Args) {
     cachedBlogArticles(tenantId, page),
   ]);
   const { articles, total, pageSize } = feed;
+  if (page > 1 && articles.length === 0) notFound();
   const cards = articles.map(toArticleCard);
 
   return (
