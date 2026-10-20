@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { SITE_ORIGIN } from "@/lib/site";
 
 /** Public key — /{key}.txt ile IndexNow doğrulanır. */
@@ -11,7 +12,7 @@ function hostFromOrigin(origin: string) {
   }
 }
 
-/** Yayın sonrası Bing/Yandex/IndexNow. Hata yutulur; sayfa cevabını bekletmez. */
+/** Yayın sonrası Bing/Yandex/IndexNow (Google IndexNow kullanmaz). Hata yutulur; cevabı bekletmez. */
 export function pingIndexNow(paths: string[], origin = SITE_ORIGIN) {
   const host = hostFromOrigin(origin);
   const urls = [...new Set(paths)]
@@ -19,14 +20,21 @@ export function pingIndexNow(paths: string[], origin = SITE_ORIGIN) {
     .map((p) => (p.startsWith("http") ? p : `${origin.replace(/\/$/, "")}${p.startsWith("/") ? p : `/${p}`}`))
     .slice(0, 20);
   if (urls.length === 0) return;
-  void fetch("https://api.indexnow.org/indexnow", {
-    method: "POST",
-    headers: { "content-type": "application/json; charset=utf-8" },
-    body: JSON.stringify({
-      host,
-      key: INDEXNOW_KEY,
-      keyLocation: `https://${host}/${INDEXNOW_KEY}.txt`,
-      urlList: urls,
-    }),
-  }).catch(() => undefined);
+  const gonder = () =>
+    fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        host,
+        key: INDEXNOW_KEY,
+        keyLocation: `https://${host}/${INDEXNOW_KEY}.txt`,
+        urlList: urls,
+      }),
+    }).catch(() => undefined);
+  // Vercel cevap döner dönmez fonksiyonu dondurur; after() isteği tamamlatır.
+  try {
+    after(gonder);
+  } catch {
+    void gonder();
+  }
 }
