@@ -23,24 +23,6 @@ function baslikPunto(baslik: string) {
   return 78;
 }
 
-function KategoriEtiketi({ kategori }: { kategori: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        background: "#F71515",
-        color: "white",
-        fontSize: 36,
-        fontWeight: 700,
-        padding: "12px 28px",
-        letterSpacing: 1,
-      }}
-    >
-      {kategori.toLocaleUpperCase("tr-TR")}
-    </div>
-  );
-}
-
 function Logo({ olcek = 1 }: { olcek?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 8 * olcek }}>
@@ -101,84 +83,35 @@ function DuzKapak({ baslik, kategori }: { baslik: string; kategori: string }) {
   );
 }
 
-/** Stok fotoğraf: alttan koyulaşan zemin, başlık, köşede şeffaf logo. */
-function FotoKapak({ baslik, kategori, foto }: { baslik: string; kategori: string; foto: string }) {
+/**
+ * Stok fotoğraf: üstüne hiçbir şey yazılmaz (başlık, etiket, logo yok).
+ * Discover temiz fotoğrafı tercih eder; başlık sitede görselin yanında/üstünde
+ * HTML olarak zaten gösteriliyor. Sadece 1600×900'e kırpılır.
+ */
+function FotoKapak({ foto }: { foto: string }) {
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        position: "relative",
-        color: "white",
-        fontFamily: "Figtree",
-        background: "#111",
-      }}
-    >
+    <div style={{ width: "100%", height: "100%", display: "flex", background: "#111" }}>
       {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
       <img
         src={foto}
         width={KAPAK_W}
         height={KAPAK_H}
-        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 36%, rgba(0,0,0,0.92) 100%)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 64,
-          left: 80,
-          right: 80,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
-        <KategoriEtiketi kategori={kategori} />
-        <div style={{ display: "flex", opacity: 0.85, textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
-          <Logo olcek={0.85} />
-        </div>
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          left: 80,
-          right: 80,
-          bottom: 72,
-          display: "flex",
-          fontSize: baslikPunto(baslik) - 8,
-          fontWeight: 800,
-          lineHeight: 1.1,
-          letterSpacing: -2,
-          textShadow: "0 3px 18px rgba(0,0,0,0.6)",
-        }}
-      >
-        {baslik}
-      </div>
     </div>
   );
 }
 
 /**
- * Telifsiz kapak. `foto` (data URL) verilirse panelden yüklenen stok
- * fotoğraf kullanılır; yoksa kırmızı markalı zemin. Kaynak sitenin
- * fotoğrafı asla kullanılmaz.
+ * Telifsiz kapak. `foto` (data URL) verilirse panelden yüklenen stok fotoğraf
+ * yazısız kullanılır; stok yoksa yedek olarak kırmızı zemin + başlık + logo.
+ * Kaynak sitenin fotoğrafı asla kullanılmaz.
  */
 export async function kapakUret(baslik: string, kategori: string, foto?: string | null): Promise<Buffer> {
   const { extraBold, bold } = await fontYukle();
   const res = new ImageResponse(
     foto ? (
-      <FotoKapak baslik={baslik} kategori={kategori} foto={foto} />
+      <FotoKapak foto={foto} />
     ) : (
       <DuzKapak baslik={baslik} kategori={kategori} />
     ),

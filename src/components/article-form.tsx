@@ -571,7 +571,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
                     onClick={() => setStokAcik(true)}
                   >
                     <ImageIcon className="size-4" />
-                    Stoktan kapak seç (başlık + logo basılır)
+                    Stoktan kapak seç
                   </Button>
                   <StokKapakSecici
                     open={stokAcik}

@@ -1,6 +1,6 @@
 /**
  * Stok kapak fotoğrafları: editör panelden yükler, otomatik hat kategoriye
- * göre rastgele seçip üstüne başlık + logo basar.
+ * göre rastgele seçip yazısız kapak yapar.
  * Depolama: article-images/<tenant>/stok/<kategori>--<benzersiz>.<uzantı>
  * (kategori "genel" ise her kategoriye düşebilir).
  */

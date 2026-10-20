@@ -14,7 +14,7 @@ type StokGorsel = { path: string; kategori: string; url: string; alt: string };
 const GENEL = "genel";
 
 /**
- * Haber formunda: stok fotoğraf seç → üstüne başlık + logo basılmış kapak
+ * Haber formunda: stok fotoğraf seç → yazısız, 1600×900 kırpılmış kapak
  * üretilir ve habere eklenir. Buradan yüklenen fotoğraf stoğa da girer.
  */
 export function StokKapakSecici({
@@ -61,7 +61,7 @@ export function StokKapakSecici({
   const gosterilen = hepsi || uygun.length === 0 ? stoklar : uygun;
 
   const uret = async (path: string | null) => {
-    if (!kapakBasligi.trim()) {
+    if (!path && !kapakBasligi.trim()) {
       toast.error("Önce kapak başlığını yazın.");
       return;
     }
@@ -109,7 +109,7 @@ export function StokKapakSecici({
         </DialogHeader>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-600">Kapağa yazılacak başlık</label>
+          <label className="text-xs font-medium text-slate-600">Kırmızı kapağa yazılacak başlık</label>
           <Input
             value={kapakBasligi}
             onChange={(e) => setKapakBasligi(e.target.value)}
@@ -117,7 +117,7 @@ export function StokKapakSecici({
             className="h-9 text-sm"
           />
           <p className="text-[11px] text-slate-400">
-            Kısa tutun; 90 karakterden uzunsa kelime sınırından kısaltılır.
+            Stok fotoğrafların üstüne yazı basılmaz; bu başlık yalnızca fotoğrafsız (kırmızı) kapakta kullanılır.
           </p>
         </div>
 
