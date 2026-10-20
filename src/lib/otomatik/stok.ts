@@ -5,6 +5,8 @@
  * (kategori "genel" ise her kategoriye düşebilir).
  */
 import { createSupabaseAdminClient } from "@/lib/supabase/adminClient";
+import sharp from "sharp";
+import { KAPAK_BUYUK, KAPAK_KUCUK } from "@/lib/kapak-varyant";
 import { havuzKategorileri } from "./konu";
 
 export const STOK_BUCKET = "article-images";
@@ -102,15 +104,23 @@ export async function stokVeri(path: string) {
   return `data:${mime};base64,${b64}`;
 }
 
-/** Üretilen kapağı (WebP) yükler; ?w&h ekli URL döner (yayın kontrolü ölçüyü oradan okur). */
+/**
+ * Üretilen kapağı (WebP) iki boyutta yükler: @1600 ve telefon için @800.
+ * ?w&h ekli büyük URL döner (yayın kontrolü ölçüyü oradan okur).
+ */
 export async function kapakYukle(tenantId: string, slug: string, gorsel: Buffer, w = 1600, h = 900) {
   const supabase = createSupabaseAdminClient();
   const unique = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const stem = slug.slice(0, 60).replace(/-+$/, "") || "kapak";
-  const path = `${tenantId}/${stem}-${unique}.webp`;
-  const { error } = await supabase.storage
-    .from(STOK_BUCKET)
-    .upload(path, gorsel, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
+  const kok = `${tenantId}/${stem}-${unique}`;
+  const path = `${kok}${KAPAK_BUYUK}`;
+  const kucuk = await sharp(gorsel).resize(800).webp({ quality: 78 }).toBuffer();
+  const yukle = (p: string, b: Buffer) =>
+    supabase.storage
+      .from(STOK_BUCKET)
+      .upload(p, b, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
+  const [buyukSonuc, kucukSonuc] = await Promise.all([yukle(path, gorsel), yukle(`${kok}${KAPAK_KUCUK}`, kucuk)]);
+  const error = buyukSonuc.error ?? kucukSonuc.error;
   if (error) throw new Error(`Kapak yüklenemedi: ${error.message}`);
   const url = new URL(supabase.storage.from(STOK_BUCKET).getPublicUrl(path).data.publicUrl);
   url.searchParams.set("w", String(w));

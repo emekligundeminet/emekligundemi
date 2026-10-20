@@ -13,6 +13,7 @@ import { BLOG_INDEX_PATH, isGuide } from "@/lib/content-type";
 import { CONTACT_EMAIL } from "@/lib/publisher";
 import { BLOG_INDEX_TITLE, formatNewsDateTime, HOME_TITLE } from "@/lib/site";
 import { articleToc, prepareArticleHtml } from "@/lib/prepare-article-html";
+import { KAPAK_SIZES, kapakSrcSet } from "@/lib/kapak-varyant";
 import type { ReaderArticle } from "@/types/reader-article";
 
 type Props = {
@@ -43,7 +44,12 @@ export function ReaderArticleBlock({
   const toc = guide ? articleToc(prepared) : [];
 
   if (priorityCover && article.cover_url) {
-    preload(article.cover_url, { as: "image", fetchPriority: "high" });
+    const srcSet = kapakSrcSet(article.cover_url);
+    preload(article.cover_url, {
+      as: "image",
+      fetchPriority: "high",
+      ...(srcSet ? { imageSrcSet: srcSet, imageSizes: KAPAK_SIZES } : {}),
+    });
   }
 
   return (

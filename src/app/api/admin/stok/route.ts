@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase.storage
     .from(STOK_BUCKET)
-    .upload(path, input, { contentType: file.type, upsert: false });
+    .upload(path, input, { contentType: file.type, upsert: false, cacheControl: "31536000" });
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }

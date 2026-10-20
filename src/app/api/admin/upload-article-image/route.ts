@@ -61,6 +61,8 @@ export async function POST(request: Request) {
     const { error } = await supabase.storage.from(BUCKET).upload(path, input, {
       contentType,
       upsert: true,
+      // Dosya adı benzersiz; tarayıcı 1 yıl önbelleklesin (varsayılan 1 saat).
+      cacheControl: "31536000",
     });
 
     if (error) {

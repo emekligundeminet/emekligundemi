@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { KAPAK_SIZES, kapakSrcSet } from "@/lib/kapak-varyant";
 
 type Props = {
   src: string | null | undefined;
@@ -22,6 +23,8 @@ export function CoverMedia({ src, alt, sizes, priority, logoSrc, className }: Pr
         // eslint-disable-next-line @next/next/no-img-element -- LCP: CDN direkt
         <img
           src={src}
+          srcSet={kapakSrcSet(src)}
+          sizes={kapakSrcSet(src) ? KAPAK_SIZES : undefined}
           alt={alt}
           width={1600}
           height={900}
