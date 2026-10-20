@@ -387,11 +387,11 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
                     onChange={() => setContentType("guide")}
                     className="accent-[var(--brand,#F71515)]"
                   />
-                  Rehber
+                  Blog yazısı
                 </label>
               </div>
               <p className="text-[11px] text-slate-500">
-                Haber anasayfada ve Google News’te; rehber /blog altında. Kategori yalnızca konu.
+                Haber anasayfada ve Google News’te; blog yazısı /blog sayfasında listelenir. Yayındaki haberi bloğa çevirirseniz eski adres otomatik yönlendirilir.
               </p>
             </fieldset>
 

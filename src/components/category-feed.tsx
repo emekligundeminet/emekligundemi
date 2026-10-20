@@ -77,7 +77,7 @@ export function CategoryFeed({
   const hasHero = (heroSlides?.length ?? 0) > 0;
   const [lead, ...restFeatured] = featured;
   const rest = hasHero ? initialMore : [...restFeatured, ...initialMore];
-  const empty = !hasHero && featured.length === 0;
+  const empty = !hasHero && featured.length === 0 && initialMore.length === 0;
 
   return (
     <div>

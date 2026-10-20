@@ -8,6 +8,14 @@ import { toast } from "sonner";
 
 const ROWS_PER_PAGE = 10;
 
+type Sekme = "taslak" | "yayinda";
+
+/** Taslak sekmesi: taslak + inceleme, çekilme/ekleme tarihine göre; yayında: yayın tarihine göre. Yeni üstte. */
+function sekmeTarihi(a: Article, sekme: Sekme) {
+  const iso = sekme === "yayinda" ? (a.published_at ?? a.created_at) : a.created_at;
+  return iso ? new Date(iso).getTime() || 0 : 0;
+}
+
 const STATUS_LABEL: Record<ArticleStatus, string> = {
   draft: "Taslak",
   review: "İnceleme",
@@ -41,6 +49,7 @@ export function AdminEntryList() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [sekme, setSekme] = useState<Sekme>("taslak");
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`"${title}" haberini kalıcı olarak silmek istediğinize emin misiniz?`)) return;
@@ -69,16 +78,24 @@ export function AdminEntryList() {
       .finally(() => setLoading(false));
   }, []);
 
+  const sayilar = useMemo(() => {
+    const yayinda = articles.filter((a) => a.status === "published").length;
+    return { yayinda, taslak: articles.length - yayinda };
+  }, [articles]);
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return articles;
     const q = search.toLowerCase().trim();
-    return articles.filter(
-      (a) =>
-        a.title?.toLowerCase().includes(q) ||
-        a.slug?.toLowerCase().includes(q) ||
-        (a.category_name ?? "").toLowerCase().includes(q)
-    );
-  }, [articles, search]);
+    return articles
+      .filter((a) => (sekme === "yayinda" ? a.status === "published" : a.status !== "published"))
+      .filter(
+        (a) =>
+          !q ||
+          a.title?.toLowerCase().includes(q) ||
+          a.slug?.toLowerCase().includes(q) ||
+          (a.category_name ?? "").toLowerCase().includes(q)
+      )
+      .sort((x, y) => sekmeTarihi(y, sekme) - sekmeTarihi(x, sekme));
+  }, [articles, search, sekme]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
   const from = (page - 1) * ROWS_PER_PAGE;
@@ -115,6 +132,34 @@ export function AdminEntryList() {
         </div>
       </div>
 
+      <div className="mb-4 flex gap-1 border-b border-slate-100" role="tablist">
+        {(
+          [
+            ["taslak", "Taslaklar", sayilar.taslak],
+            ["yayinda", "Yayında", sayilar.yayinda],
+          ] as const
+        ).map(([id, ad, sayi]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={sekme === id}
+            onClick={() => {
+              setSekme(id);
+              setPage(1);
+            }}
+            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${
+              sekme === id
+                ? "border-indigo-600 text-indigo-700"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            {ad}
+            <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{sayi}</span>
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="flex items-center gap-2 py-12 text-sm text-slate-500">
           <Loader2 className="size-4 animate-spin" />
@@ -126,6 +171,10 @@ export function AdminEntryList() {
           <Link href="/admin/articles/create" className="text-indigo-600 hover:underline">
             Yeni ekle
           </Link>
+        </p>
+      ) : filtered.length === 0 ? (
+        <p className="py-12 text-sm text-slate-500">
+          {search.trim() ? "Aramayla eşleşen haber yok." : sekme === "taslak" ? "Bekleyen taslak yok." : "Yayında haber yok."}
         </p>
       ) : (
         <>
@@ -154,7 +203,14 @@ export function AdminEntryList() {
                     key={a.id}
                     className="border-b border-slate-50 transition-colors hover:bg-indigo-50/50"
                   >
-                    <td className="py-3 pr-4 font-medium text-slate-800">{a.title}</td>
+                    <td className="py-3 pr-4 font-medium text-slate-800">
+                      {a.title}
+                      {a.type === "guide" ? (
+                        <span className="ml-2 rounded bg-violet-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-violet-700">
+                          Blog
+                        </span>
+                      ) : null}
+                    </td>
                     <td className="py-3 pr-4 text-slate-500">{a.category_name ?? "—"}</td>
                     <td className="py-3 pr-4">
                       <span className={statusClass(a.status)}>{STATUS_LABEL[a.status]}</span>
