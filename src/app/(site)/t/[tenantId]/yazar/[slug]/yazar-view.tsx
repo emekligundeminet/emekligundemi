@@ -15,6 +15,13 @@ import type { Metadata } from "next";
 
 type Args = { tenantId: string; slug: string; page: number };
 
+/** Biyografi uzun olabilir; meta açıklama ~155 karakterde kelime sınırından kesilir. */
+function kisaAciklama(bio: string | null | undefined, max = 155) {
+  const t = bio?.replace(/\s+/g, " ").trim();
+  if (!t || t.length <= max) return t;
+  return `${t.slice(0, t.slice(0, max).lastIndexOf(" "))}…`;
+}
+
 export async function yazarMetadata({ tenantId, slug }: Args): Promise<Metadata> {
   const [site, author] = await Promise.all([
     cachedSiteMeta(tenantId),
@@ -24,13 +31,13 @@ export async function yazarMetadata({ tenantId, slug }: Args): Promise<Metadata>
   const path = authorPath(author.name);
   return {
     title: { absolute: staticDocumentTitle(author.name) },
-    description: author.bio?.trim() || `${author.name} yazıları.`,
+    description: kisaAciklama(author.bio) || `${author.name} yazıları.`,
     robots: NOINDEX_FOLLOW_ROBOTS,
     alternates: { canonical: site ? `${site.origin}${path}` : path },
     openGraph: {
       type: "profile",
       title: author.name,
-      description: author.bio?.trim() || undefined,
+      description: kisaAciklama(author.bio) || undefined,
       url: site ? `${site.origin}${path}` : path,
     },
   };

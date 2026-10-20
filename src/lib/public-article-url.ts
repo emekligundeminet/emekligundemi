@@ -15,6 +15,11 @@ function originOf(canonical: string) {
 /**
  * Public haber yolu: /{slug}. İç ISR yolu /t/{tenantId} asla üretilmez.
  */
+/** Haber merkezi / editör ekibi imzası mı (yapısal veride Organization olur)? */
+export function kurumImzasiMi(ad: string) {
+  return /haber merkezi|editör|editor|desk|ekibi|\bajans/i.test(ad);
+}
+
 export function publicArticlePath(slug: string): string | null {
   const clean = slug.trim().replace(/^\/+/, "").replace(/\/+$/, "");
   if (!clean || clean.includes("/") || clean === "t") return null;
@@ -88,7 +93,8 @@ export function newsArticleJsonLd(opts: {
     mainEntityOfPage: { "@type": "WebPage", "@id": opts.canonical },
     author: opts.authorName
       ? {
-          "@type": "Person",
+          // "Emekli Haber Merkezi" gibi ekip imzaları kişi değil kurumdur.
+          "@type": kurumImzasiMi(opts.authorName) ? "Organization" : "Person",
           name: opts.authorName,
           url: opts.authorUrl || undefined,
         }
