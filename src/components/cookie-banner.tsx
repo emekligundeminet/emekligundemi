@@ -39,7 +39,7 @@ export function CookieBanner() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-[60] border-t border-neutral-200 bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.08)]"
       role="region"
       aria-label="Çerez tercihi"
     >
@@ -51,18 +51,19 @@ export function CookieBanner() {
             Çerez politikası
           </Link>
         </p>
-        <div className="flex flex-wrap gap-2">
+        {/* Mobilde iki eşit düğme bandı tam kaplar; masaüstünde sağa yaslı. */}
+        <div className="grid shrink-0 grid-cols-2 gap-2 md:flex">
           <button
             type="button"
             onClick={() => choose("necessary")}
-            className="min-h-11 cursor-pointer rounded-md border border-neutral-300 px-4 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+            className="min-h-11 cursor-pointer rounded-md border border-neutral-300 px-3 md:px-4 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
           >
             Sadece gerekli
           </button>
           <button
             type="button"
             onClick={() => choose("all")}
-            className="min-h-11 cursor-pointer rounded-md bg-[var(--brand)] px-4 text-sm font-semibold text-white hover:opacity-90"
+            className="min-h-11 cursor-pointer rounded-md bg-[var(--brand)] px-3 md:px-4 text-sm font-semibold text-white hover:opacity-90"
           >
             Tümünü kabul et
           </button>
