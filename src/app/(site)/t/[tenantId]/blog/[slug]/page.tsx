@@ -10,6 +10,7 @@ import { articleSocialMeta, wordCountFromHtml } from "@/lib/seo";
 import { isGuide } from "@/lib/content-type";
 import { cachedArticle, cachedIcLinkAyari, cachedBlogArticles, cachedHomeArticles, cachedSiteMeta } from "@/lib/cached-public";
 import { notFound, permanentRedirect } from "next/navigation";
+import { yonlendirmeBul } from "@/lib/yonlendirme";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -66,7 +67,13 @@ export default async function BlogArticlePage({ params }: { params: Promise<Para
     cachedArticle(tenantId, slug),
     cachedIcLinkAyari(tenantId),
   ]);
-  if (!site || !article) notFound();
+  if (!site) notFound();
+  if (!article) {
+    // Adresi değişmiş yayınlanmış haber: eski link 301 ile yenisine gider.
+    const hedef = await yonlendirmeBul(tenantId, `/blog/${slug}`);
+    if (hedef) permanentRedirect(hedef);
+    notFound();
+  }
   if (!isGuide(article.type)) {
     permanentRedirect(`/${article.slug}`);
   }

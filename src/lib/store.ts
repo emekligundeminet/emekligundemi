@@ -12,6 +12,7 @@ import { authorSlug } from "@/lib/author-slug";
 import { parseKaynaklar, type Kaynak } from "@/lib/kaynak";
 import { MANSET_SLOTS, SON_DAKIKA_SLOTS } from "@/lib/showcase-slots";
 import { CATEGORY_NAV_ORDER } from "@/lib/site";
+import { yonlendirmeEkle } from "@/lib/yonlendirme";
 import type { ContentType } from "@/lib/content-type";
 
 const ARTICLE_LIST_COLS =
@@ -548,8 +549,15 @@ export async function updateArticle(
     .select(ARTICLE_FULL_COLS)
     .single();
   if (error) fail(error);
+  // Yayınlanmış haberin adresi değiştiyse eski adres (Google'da indexli olabilir) 301 olsun.
+  const yeni = data as unknown as Article;
+  const eskiYol = articlePath({ slug: current.slug, type: current.type });
+  const yeniYol = articlePath({ slug: yeni.slug, type: yeni.type });
+  if (current.published_at && eskiYol !== yeniYol) {
+    await yonlendirmeEkle(tenantId, eskiYol, yeniYol);
+  }
   await trimShowcases(tenantId);
-  return data as Article;
+  return yeni;
 }
 
 export async function publishArticle(tenantId: string, id: string) {
