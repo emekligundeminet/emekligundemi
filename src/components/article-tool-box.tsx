@@ -19,19 +19,24 @@ const ACIKLAMA: Record<string, string> = {
   "alim-gucu": "Maaşınız enflasyona karşı ne kaybetti?",
 };
 
-/** Haber altı iç link: okuru ilgili araca taşır (araçlar sitenin kalıcı trafik sayfaları). */
-export function ArticleToolBox({ categorySlug }: { categorySlug: string | null }) {
-  const ids = (categorySlug && KATEGORI_ARACLARI[categorySlug]) || VARSAYILAN;
-  const araclar = ids
-    .map((id) => CALC_TOOLS.find((t) => t.id === id))
-    .filter((t): t is (typeof CALC_TOOLS)[number] => Boolean(t));
-  if (araclar.length === 0) return null;
+type Arac = (typeof CALC_TOOLS)[number];
 
+/** "Hesaplayın" kart listesi: haber altı ve araç sayfası altı aynı tasarım. */
+export function AracKartlari({
+  araclar,
+  baslik = "Hesaplayın",
+  className = "mt-8",
+}: {
+  araclar: Arac[];
+  baslik?: string;
+  className?: string;
+}) {
+  if (araclar.length === 0) return null;
   return (
-    <aside className="mt-8 rounded-lg border border-neutral-200 p-4" aria-label="Hesaplama araçları">
+    <aside className={`${className} rounded-lg border border-neutral-200 p-4`} aria-label="Hesaplama araçları">
       <p className="mb-3 flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-neutral-500">
         <Calculator className="size-4 text-[var(--brand)]" />
-        Hesaplayın
+        {baslik}
       </p>
       <ul className="grid gap-2 sm:grid-cols-2">
         {araclar.map((t) => (
@@ -51,4 +56,13 @@ export function ArticleToolBox({ categorySlug }: { categorySlug: string | null }
       </ul>
     </aside>
   );
+}
+
+/** Haber altı iç link: okuru ilgili araca taşır (araçlar sitenin kalıcı trafik sayfaları). */
+export function ArticleToolBox({ categorySlug }: { categorySlug: string | null }) {
+  const ids = (categorySlug && KATEGORI_ARACLARI[categorySlug]) || VARSAYILAN;
+  const araclar = ids
+    .map((id) => CALC_TOOLS.find((t) => t.id === id))
+    .filter((t): t is Arac => Boolean(t));
+  return <AracKartlari araclar={araclar} />;
 }

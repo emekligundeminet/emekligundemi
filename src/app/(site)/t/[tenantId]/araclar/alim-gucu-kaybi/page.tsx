@@ -13,7 +13,7 @@ export const dynamicParams = true;
 
 const PATH = "/araclar/alim-gucu-kaybi";
 const TITLE = "Alım Gücü Kaybı";
-const DESC = "Geçmişteki bir tutarın bugünkü karşılığını TÜFE endeksiyle hesaplayın.";
+const DESC = "Yıllar önceki maaşınız ya da paranız bugün kaç lira eder? TÜİK enflasyonuyla hesaplayın.";
 
 export function generateStaticParams() {
   return [] as { tenantId: string }[];

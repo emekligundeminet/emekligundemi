@@ -2,201 +2,175 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import {
+  CalcNotice,
   CalcResult,
+  CalcSecim,
+  CalcSoru,
   CalcSubmit,
+  CalcTutar,
   CalculatorShell,
-  calcInputClass,
 } from "@/components/calculator-shell";
 import {
   asMonthMap,
   asNumber,
   asString,
+  donemAylari,
+  donemEnflasyonu,
   formatTry,
   formatYuzde,
-  hesaplaZam,
-  kumulatifTufe,
-  type ZamTipi,
+  memurZamYuzde,
+  parseTutar,
 } from "@/lib/hesap-formulas";
 import type { HesapParamMap } from "@/types/hesap";
 
-const TURLER: { value: ZamTipi; label: string }[] = [
-  { value: "ssk_bagkur", label: "SSK / Bağ-Kur" },
-  { value: "memur", label: "Memur emeklisi" },
-];
+type Tip = "ssk_bagkur" | "memur";
 
-function parseTl(value: string) {
-  return Number(value.replace(/\D/g, "")) || 0;
-}
+const AY_ADI = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+const ayAdi = (k: string) => AY_ADI[Number(k.slice(5, 7)) - 1] ?? k;
 
+/**
+ * Parametreler (Panel → Hesap parametreleri):
+ * - donem_baslangic: zam döneminin ilk ayı "2026-07" (Ocak 2027 zammı için)
+ * - donem_etiketi: "Ocak 2027"
+ * - tufe_endeks: TÜİK endeks serisi { "2026-07": 132.31, … } (asıl kaynak)
+ * - tufe_aylik: endeks yoksa yedek aylık yüzdeler
+ * - tufe_tahmin_aylik: açıklanmamış aylar için aylık tahmin; boşsa açıklananların ortalaması
+ * - toplu_sozlesme_onceki / toplu_sozlesme_yeni: memur toplu sözleşme oranları (%)
+ * - en_dusuk_emekli_ayligi: taban aylık (TL)
+ */
 export function ZamTool({ params }: { params: HesapParamMap }) {
-  const zamSsk = asNumber(params.zam_ssk_bagkur_donem) ?? 0;
-  const zamMemur = asNumber(params.zam_memur_donem) ?? 0;
+  const donem = asString(params.donem_etiketi) || "Yeni dönem";
   const taban = asNumber(params.en_dusuk_emekli_ayligi) ?? 0;
-  const donem = asString(params.donem_etiketi) || "Dönem";
-  const resmiAylar = asMonthMap(params.tufe_aylik);
+  const tsOnceki = asNumber(params.toplu_sozlesme_onceki) ?? 0;
+  const tsYeni = asNumber(params.toplu_sozlesme_yeni) ?? 0;
 
-  const [sekme, setSekme] = useState<"resmi" | "senaryo">("resmi");
-  const [maas, setMaas] = useState("");
-  const [tip, setTip] = useState<ZamTipi>("ssk_bagkur");
-  const [tahmin, setTahmin] = useState<Record<string, string>>({});
-  const [hesaplandi, setHesaplandi] = useState(false);
-
-  const senaryoAylar = useMemo(() => {
-    const next = { ...resmiAylar };
-    for (const [k, v] of Object.entries(tahmin)) {
-      const n = Number(v.replace(",", "."));
-      if (Number.isFinite(n)) next[k] = n;
-    }
-    return next;
-  }, [resmiAylar, tahmin]);
-
-  const sonuc = useMemo(() => {
-    const mevcut = parseTl(maas);
-    if (!hesaplandi || mevcut < 1) return null;
-    if (sekme === "senaryo") {
-      const oran = kumulatifTufe(senaryoAylar) * 100;
-      return {
-        ...hesaplaZam({
-          mevcutMaas: mevcut,
-          tip,
-          zamSskBagkur: oran,
-          zamMemur: oran,
-          taban,
-        }),
-        projeksiyon: true,
-      };
-    }
-    return {
-      ...hesaplaZam({
-        mevcutMaas: mevcut,
-        tip,
-        zamSskBagkur: zamSsk,
-        zamMemur: zamMemur,
-        taban,
+  const enf = useMemo(
+    () =>
+      donemEnflasyonu({
+        aylar: donemAylari(asString(params.donem_baslangic)),
+        endeks: asMonthMap(params.tufe_endeks),
+        aylik: asMonthMap(params.tufe_aylik),
+        tahminAylik: asNumber(params.tufe_tahmin_aylik),
       }),
-      projeksiyon: false,
-    };
-  }, [hesaplandi, maas, sekme, senaryoAylar, taban, tip, zamMemur, zamSsk]);
+    [params]
+  );
+
+  const [tip, setTip] = useState<Tip | null>(null);
+  const [maas, setMaas] = useState("");
+  const [goster, setGoster] = useState(false);
+
+  const mevcut = parseTutar(maas);
+  const oranYuzde = tip === "memur" ? memurZamYuzde(enf.toplamYuzde, tsOnceki, tsYeni) : enf.toplamYuzde;
+  const kesinOran = tip === "memur" ? memurZamYuzde(enf.kesinlesenYuzde, tsOnceki, tsYeni) : enf.kesinlesenYuzde;
+  const tabanda = taban > 0 && mevcut > 0 && mevcut <= taban + 1;
+  const yeni = mevcut * (1 + oranYuzde / 100);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setHesaplandi(true);
+    if (tip && mevcut > 0) setGoster(true);
   }
 
-  const tahminAnahtarlar = Object.keys(resmiAylar).sort();
+  if (enf.aciklananAylar.length === 0) {
+    return (
+      <CalcNotice tone="neutral">
+        Zam dönemi verileri güncelleniyor. Lütfen daha sonra tekrar deneyin.
+      </CalcNotice>
+    );
+  }
+
+  const kesinAylarMetni = `${ayAdi(enf.aciklananAylar[0]!)}–${ayAdi(enf.aciklananAylar.at(-1)!)}`;
 
   return (
-    <CalculatorShell>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            setSekme("resmi");
-            setHesaplandi(false);
-          }}
-          className={`h-10 flex-1 text-sm font-bold ${
-            sekme === "resmi"
-              ? "bg-neutral-900 text-white"
-              : "border border-neutral-300 bg-white text-neutral-700"
-          }`}
-        >
-          Resmi oran
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setSekme("senaryo");
-            setHesaplandi(false);
-          }}
-          className={`h-10 flex-1 text-sm font-bold ${
-            sekme === "senaryo"
-              ? "bg-neutral-900 text-white"
-              : "border border-neutral-300 bg-white text-neutral-700"
-          }`}
-        >
-          Senaryo (TÜFE)
-        </button>
-      </div>
-
-      <form onSubmit={onSubmit} className="mt-5 space-y-4">
-        <fieldset>
-          <legend className="mb-2 text-sm font-bold text-neutral-800">Emekli tipi</legend>
-          <div className="flex flex-col gap-2">
-            {TURLER.map((item) => (
-              <label key={item.value} className="flex cursor-pointer items-center gap-2.5 text-[15px]">
-                <input
-                  type="radio"
-                  name="tip"
-                  checked={tip === item.value}
-                  onChange={() => setTip(item.value)}
-                  className="h-4 w-4 accent-[var(--brand)]"
-                />
-                {item.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-neutral-800">Şu anki emekli maaşı</span>
-          <input
-            inputMode="decimal"
-            value={maas}
-            onChange={(e) => setMaas(e.target.value)}
-            placeholder="25000"
-            className={calcInputClass()}
+    <CalculatorShell
+      notice={
+        enf.kesin ? null : (
+          <CalcNotice>
+            {donem} zammı henüz kesinleşmedi. {kesinAylarMetni} enflasyonu açıklandı; kalan{" "}
+            {enf.tahminAylar.length} ay için tahmin kullanılır. Sonuç yaklaşıktır.
+          </CalcNotice>
+        )
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div>
+          <CalcSoru no={1}>Hangi emeklisiniz?</CalcSoru>
+          <CalcSecim<Tip>
+            deger={tip}
+            onChange={(v) => {
+              setTip(v);
+              setGoster(false);
+            }}
+            secenekler={[
+              { value: "ssk_bagkur", label: "SSK veya Bağ-Kur", alt: "İşçi ve esnaf emeklileri" },
+              { value: "memur", label: "Memur emeklisi", alt: "Emekli Sandığı" },
+            ]}
           />
-        </label>
+        </div>
 
-        {sekme === "senaryo" ? (
-          <fieldset>
-            <legend className="mb-1 text-sm font-bold text-neutral-800">Aylık TÜFE (%)</legend>
-            <p className="mb-2 text-[12px] text-neutral-500">
-              Açıklanan aylar dolu gelir. Açıklanmamış ay için tahmin yazın.
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {tahminAnahtarlar.map((k) => (
-                <label key={k} className="block">
-                  <span className="mb-1 block text-[12px] text-neutral-600">{k}</span>
-                  <input
-                    inputMode="decimal"
-                    defaultValue={String(resmiAylar[k] ?? "")}
-                    onChange={(e) => setTahmin((p) => ({ ...p, [k]: e.target.value }))}
-                    className={calcInputClass()}
-                  />
-                </label>
-              ))}
-              <label className="block">
-                <span className="mb-1 block text-[12px] text-neutral-600">Yeni ay (YYYY-AA)</span>
-                <input
-                  inputMode="decimal"
-                  placeholder="1.5"
-                  onChange={(e) => setTahmin((p) => ({ ...p, tahmin: e.target.value }))}
-                  className={calcInputClass()}
-                />
-              </label>
-            </div>
-          </fieldset>
+        <div>
+          <label htmlFor="zam-maas">
+            <CalcSoru no={2}>Şu an aldığınız emekli aylığı</CalcSoru>
+          </label>
+          <CalcTutar
+            id="zam-maas"
+            value={maas}
+            onChange={(v) => {
+              setMaas(v);
+              setGoster(false);
+            }}
+          />
+          <p className="mt-2 text-[15px] text-neutral-600">
+            e-Devlet&apos;te veya banka hesabınızda gördüğünüz tutar.
+          </p>
+        </div>
+
+        <CalcSubmit disabled={!tip || mevcut <= 0}>Hesapla</CalcSubmit>
+        {!tip || mevcut <= 0 ? (
+          <p className="text-center text-[15px] text-neutral-500">Önce iki soruyu cevaplayın.</p>
         ) : null}
-
-        <CalcSubmit>Hesapla</CalcSubmit>
       </form>
 
-      {sonuc ? (
-        <CalcResult label={`${donem} tahmini aylık`} value={formatTry(sonuc.odenen)}>
-          <ul className="mt-4 space-y-1.5 text-[14px] text-neutral-800">
-            <li>Zam tutarı: {formatTry(sonuc.fark)}</li>
-            <li>Uygulanan oran: {formatYuzde(sonuc.oranYuzde)}</li>
-            {sonuc.tabanUygulandi ? (
-              <li>En düşük aylık tabanı uygulandı ({formatTry(taban)}).</li>
-            ) : null}
-          </ul>
-          {sonuc.projeksiyon ? (
-            <p className="mt-3 text-[13px] leading-snug text-neutral-600">
-              Resmi oran henüz açıklanmadı, bu bir projeksiyondur.
+      {goster && tip && mevcut > 0 ? (
+        tabanda ? (
+          <CalcResult label={`${donem} için`} value="En düşük aylık">
+            <p className="mt-3 text-[17px] leading-relaxed text-neutral-800">
+              Şu an en düşük emekli aylığını ({formatTry(taban)}) alıyorsunuz. Bu tutar zamla değil, ayrı
+              bir yasal kararla belirlenir. Zam oranı kadar artırılırsa yaklaşık{" "}
+              <strong>{formatTry(taban * (1 + oranYuzde / 100))}</strong> olur; kesin rakam Meclis
+              kararıyla açıklanır.
             </p>
-          ) : null}
-        </CalcResult>
+          </CalcResult>
+        ) : (
+          <CalcResult
+            label={`${donem}'den itibaren ${enf.kesin ? "" : "yaklaşık "}aylığınız`}
+            value={formatTry(yeni)}
+          >
+            <p className="mt-3 text-[17px] leading-relaxed text-neutral-800">
+              Aylığınıza <strong>{formatTry(yeni - mevcut)}</strong> zam gelir (zam oranı{" "}
+              <strong>{formatYuzde(oranYuzde)}</strong>).
+            </p>
+            {!enf.kesin ? (
+              <ul className="mt-4 space-y-1.5 border-t border-neutral-200 pt-4 text-[15px] text-neutral-700">
+                <li>
+                  Şu ana kadar kesinleşen zam: <strong>{formatYuzde(kesinOran)}</strong> (
+                  {kesinAylarMetni} enflasyonu) → {formatTry(mevcut * (1 + kesinOran / 100))}
+                </li>
+                <li>
+                  Kalan {enf.tahminAylar.length} ay için aylık {formatYuzde(enf.tahminAylik)} enflasyon
+                  varsayıldı.
+                </li>
+                {tip === "memur" ? (
+                  <li>
+                    Memur emeklisi zammı: enflasyon farkı + {formatYuzde(tsYeni, 0)} toplu sözleşme zammı.
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
+            <p className="mt-4 text-[14px] leading-snug text-neutral-500">
+              Kesin tutar SGK tarafından e-Devlet&apos;te ve banka hesabınızda gösterilir.
+            </p>
+          </CalcResult>
+        )
       ) : null}
     </CalculatorShell>
   );

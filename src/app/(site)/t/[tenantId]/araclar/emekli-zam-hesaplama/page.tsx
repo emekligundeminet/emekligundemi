@@ -14,7 +14,7 @@ export const dynamicParams = true;
 const PATH = "/araclar/emekli-zam-hesaplama";
 const TITLE = "Emekli Zam Hesaplama";
 const DESC =
-  "SSK, Bağ-Kur ve memur emeklisi zammını hesaplayın. Taban aylık ve senaryo TÜFE dahildir.";
+  "SSK, Bağ-Kur ve memur emeklisi: yeni zamla aylığınızın ne kadar olacağını iki adımda öğrenin.";
 
 export function generateStaticParams() {
   return [] as { tenantId: string }[];
@@ -59,7 +59,7 @@ export default async function EmekliZamPage({
         name: "Emekli zammı nasıl hesaplanır?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Mevcut maaş, dönem zammı ile çarpılır. Sonuç en düşük aylığın altındaysa taban uygulanır.",
+          text: "SSK ve Bağ-Kur emeklilerinin zammı önceki altı ayın TÜFE artışı kadardır; mevcut aylık bu oranla artırılır. En düşük aylık alanların artışı ayrı yasal düzenlemeyle belirlenir.",
         },
       },
       {
@@ -67,7 +67,7 @@ export default async function EmekliZamPage({
         name: "SSK ve memur zammı aynı mı?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Hayır. SSK/Bağ-Kur ile memur emeklisi farklı dönem oranları kullanabilir.",
+          text: "Hayır. Memur emeklisinin zammı, enflasyon farkı ile yeni dönem toplu sözleşme zammının birleşimidir; bu yüzden SSK ve Bağ-Kur oranından farklı olur.",
         },
       },
     ],

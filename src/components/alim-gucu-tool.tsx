@@ -1,161 +1,137 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import {
   CalcNotice,
   CalcResult,
+  CalcSoru,
   CalcSubmit,
+  CalcTutar,
   CalculatorShell,
   calcInputClass,
 } from "@/components/calculator-shell";
-import { asMonthMap, formatTry, formatYuzde, hesaplaAlimGucu } from "@/lib/hesap-formulas";
+import { asMonthMap, formatTry, formatYuzde, hesaplaAlimGucu, parseTutar } from "@/lib/hesap-formulas";
 import type { HesapParamMap } from "@/types/hesap";
 
-const AYLAR = [
-  "Ocak",
-  "Şubat",
-  "Mart",
-  "Nisan",
-  "Mayıs",
-  "Haziran",
-  "Temmuz",
-  "Ağustos",
-  "Eylül",
-  "Ekim",
-  "Kasım",
-  "Aralık",
-];
+const AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
-function parseTl(value: string) {
-  return Number(value.replace(/\D/g, "")) || 0;
-}
+const anahtar = (yil: number, ay: number) => `${yil}-${String(ay).padStart(2, "0")}`;
+const tarihYaz = (k: string) => `${AYLAR[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
 
-function sonAnahtar(map: Record<string, number>) {
-  return Object.keys(map).sort().at(-1) ?? "";
-}
-
+/** Parametre: tufe_endeks — TÜİK TÜFE endeksi { "2026-09": 137.23, … }. Baz yılı fark etmez (oran). */
 export function AlimGucuTool({ params }: { params: HesapParamMap }) {
   const endeks = asMonthMap(params.tufe_endeks);
-  const bugunKey = sonAnahtar(endeks);
-  const yillar = [
-    ...new Set(Object.keys(endeks).map((k) => Number(k.slice(0, 4))).filter((y) => y > 1900)),
-  ].sort((a, b) => b - a);
+  const anahtarlar = Object.keys(endeks).sort();
+  const bugunKey = anahtarlar.at(-1) ?? "";
+  const yillar = [...new Set(anahtarlar.map((k) => Number(k.slice(0, 4))))].sort((a, b) => b - a);
+  const varsayilanYil = bugunKey ? Number(bugunKey.slice(0, 4)) - 1 : 0;
 
-  const [ay, setAy] = useState("1");
-  const [yil, setYil] = useState(yillar[0] ? String(yillar[0]) : "");
+  const [yil, setYil] = useState(String(yillar.includes(varsayilanYil) ? varsayilanYil : (yillar[0] ?? "")));
+  const [ay, setAy] = useState(bugunKey ? String(Number(bugunKey.slice(5, 7))) : "1");
   const [tutar, setTutar] = useState("");
-  const [hesaplandi, setHesaplandi] = useState(false);
+  const [goster, setGoster] = useState(false);
 
-  const sonuc = useMemo(() => {
-    const n = parseTl(tutar);
-    if (!hesaplandi || n < 1 || !bugunKey) return null;
-    const gecmisKey = `${yil}-${String(ay).padStart(2, "0")}`;
-    const eGecis = endeks[gecmisKey];
-    const eBugun = endeks[bugunKey];
-    if (eGecis == null || eBugun == null) {
-      return { eksik: gecmisKey } as const;
-    }
-    const r = hesaplaAlimGucu({ tutar: n, endeksGecis: eGecis, endeksBugun: eBugun });
-    if (!r) return { eksik: gecmisKey } as const;
-    return { ...r, tutar: n, gecmisKey, bugunKey };
-  }, [ay, bugunKey, endeks, hesaplandi, tutar, yil]);
+  const n = parseTutar(tutar);
+  const gecmisKey = anahtar(Number(yil), Number(ay));
+  const sonuc =
+    endeks[gecmisKey] != null && bugunKey && n > 0
+      ? hesaplaAlimGucu({ tutar: n, endeksGecis: endeks[gecmisKey]!, endeksBugun: endeks[bugunKey]! })
+      : null;
+  const aylarBuYil = AYLAR.map((ad, i) => ({ ad, no: i + 1 })).filter((m) => endeks[anahtar(Number(yil), m.no)] != null);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setHesaplandi(true);
+    if (n > 0) setGoster(true);
   }
 
-  const paylasMetin =
-    sonuc && "bugunkuKarsilik" in sonuc
-      ? `${formatTry(sonuc.tutar)} (${sonuc.gecmisKey}) bugün ${formatTry(sonuc.bugunkuKarsilik)} eder. Alım gücü kaybı ${formatYuzde(sonuc.kayipYuzde)}.`
-      : "";
+  if (anahtarlar.length === 0) {
+    return <CalcNotice tone="neutral">Enflasyon verileri güncelleniyor. Lütfen daha sonra tekrar deneyin.</CalcNotice>;
+  }
+
+  const paylasMetin = sonuc
+    ? `${tarihYaz(gecmisKey)} tarihindeki ${formatTry(n)}, bugün ${formatTry(sonuc.bugunkuKarsilik)} ediyor. Paranın değeri ${formatYuzde(sonuc.kayipYuzde, 0)} eridi. Hesapla: https://emekliler.org/araclar/alim-gucu-kaybi`
+    : "";
 
   return (
-    <CalculatorShell
-      notice={
-        Object.keys(endeks).length === 0 ? (
-          <CalcNotice tone="neutral">
-            TÜFE endeks serisi henüz yok. Hesaplama şu an kapalı.
-          </CalcNotice>
-        ) : (
-          <CalcNotice>
-            Hesap TÜİK endeksine dayanır. Sonuç ortalama fiyat düzeyidir; kişisel sepetiniz
-            farklı olabilir.
-          </CalcNotice>
-        )
-      }
-    >
-      <form onSubmit={onSubmit} className="mt-5 space-y-4">
+    <CalculatorShell>
+      <form onSubmit={onSubmit} className="space-y-6">
         <div>
-          <p className="mb-2 text-sm font-bold text-neutral-800">Geçmiş tarih</p>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="block">
-              <span className="mb-1 block text-[12px] text-neutral-600">Ay</span>
-              <select value={ay} onChange={(e) => setAy(e.target.value)} className={calcInputClass()}>
-                {AYLAR.map((ad, i) => (
-                  <option key={ad} value={i + 1}>
-                    {ad}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-[12px] text-neutral-600">Yıl</span>
-              <select value={yil} onChange={(e) => setYil(e.target.value)} className={calcInputClass()}>
-                {(yillar.length ? yillar : [new Date().getFullYear()]).map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <CalcSoru no={1}>Hangi tarihteki parayı soruyorsunuz?</CalcSoru>
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              aria-label="Ay"
+              value={ay}
+              onChange={(e) => {
+                setAy(e.target.value);
+                setGoster(false);
+              }}
+              className={calcInputClass()}
+            >
+              {aylarBuYil.map((m) => (
+                <option key={m.no} value={m.no}>
+                  {m.ad}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Yıl"
+              value={yil}
+              onChange={(e) => {
+                const y = e.target.value;
+                setYil(y);
+                // Seçili ay o yılda yoksa (örn. içinde bulunulan yıl) son mevcut aya çek.
+                if (endeks[anahtar(Number(y), Number(ay))] == null) {
+                  const son = AYLAR.map((_, i) => i + 1).filter((m) => endeks[anahtar(Number(y), m)] != null).at(-1);
+                  if (son) setAy(String(son));
+                }
+                setGoster(false);
+              }}
+              className={calcInputClass()}
+            >
+              {yillar.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-neutral-800">O günkü tutar / maaş</span>
-          <input
-            inputMode="decimal"
+        <div>
+          <label htmlFor="alim-tutar">
+            <CalcSoru no={2}>O tarihteki tutar (maaşınız gibi)</CalcSoru>
+          </label>
+          <CalcTutar
+            id="alim-tutar"
             value={tutar}
-            onChange={(e) => setTutar(e.target.value)}
-            placeholder="10000"
-            className={calcInputClass()}
+            onChange={(v) => {
+              setTutar(v);
+              setGoster(false);
+            }}
+            placeholder="Örnek: 10.000"
           />
-        </label>
+        </div>
 
-        <CalcSubmit>Hesapla</CalcSubmit>
+        <CalcSubmit disabled={n <= 0}>Hesapla</CalcSubmit>
       </form>
 
-      {sonuc && "eksik" in sonuc ? (
-        <p className="mt-4 text-sm text-[var(--brand)]">
-          {sonuc.eksik} için endeks yok. Panele o ayı ekleyin.
-        </p>
-      ) : null}
-
-      {sonuc && "bugunkuKarsilik" in sonuc ? (
-        <CalcResult label="Bugünkü karşılık" value={formatTry(sonuc.bugunkuKarsilik)}>
-          <p className="mt-3 text-[16px] font-bold leading-snug text-neutral-800">
-            {formatTry(sonuc.tutar)} ({sonuc.gecmisKey}) bugün {formatTry(sonuc.bugunkuKarsilik)}{" "}
-            eder. Alım gücü kaybı {formatYuzde(sonuc.kayipYuzde)}.
+      {goster && sonuc ? (
+        <CalcResult label={`${tarihYaz(gecmisKey)} tarihindeki ${formatTry(n)} bugün`} value={formatTry(sonuc.bugunkuKarsilik)}>
+          <p className="mt-3 text-[17px] leading-relaxed text-neutral-800">
+            Aynı şeyleri bugün almak için <strong>{formatTry(sonuc.bugunkuKarsilik)}</strong> gerekir. Yani
+            paranın değeri <strong>{formatYuzde(sonuc.kayipYuzde, 0)}</strong> eridi.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <a
-              className="inline-flex h-10 items-center bg-[#25D366] px-3 text-sm font-bold text-white"
-              href={`https://wa.me/?text=${encodeURIComponent(paylasMetin)}`}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-            >
-              WhatsApp
-            </a>
-            <a
-              className="inline-flex h-10 items-center bg-neutral-900 px-3 text-sm font-bold text-white"
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(paylasMetin)}`}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-            >
-              X
-            </a>
-          </div>
+          <p className="mt-3 text-[14px] text-neutral-500">
+            TÜİK enflasyonuna göre, {tarihYaz(bugunKey)} fiyatlarıyla. Kişisel harcamalarınız farklı olabilir.
+          </p>
+          <a
+            className="mt-4 flex h-14 items-center justify-center rounded-lg bg-[#25D366] text-lg font-bold text-white"
+            href={`https://wa.me/?text=${encodeURIComponent(paylasMetin)}`}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+          >
+            WhatsApp&apos;ta paylaş
+          </a>
         </CalcResult>
       ) : null}
     </CalculatorShell>

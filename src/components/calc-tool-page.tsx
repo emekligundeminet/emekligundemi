@@ -1,4 +1,5 @@
 import { ArticleMansetStrip, articlesToMansetCards } from "@/components/article-manset-strip";
+import { AracKartlari } from "@/components/article-tool-box";
 import { calcToolsExcept } from "@/lib/calc-tools";
 import { articlePath } from "@/lib/site";
 import type { Article } from "@/types/article";
@@ -25,21 +26,17 @@ export function CalcToolPage({
   relatedGuides: Article[];
   logoSrc?: string | null;
 }) {
-  const toolCards = calcToolsExcept(currentPath).map((t) => ({
-    key: t.id,
-    href: t.path,
-    title: t.title,
-    coverUrl: t.coverUrl,
-    coverAlt: t.coverAlt ?? t.title,
-  }));
-  const seen = new Set(toolCards.map((c) => c.href));
+  // Görselsiz araçlar artık resimli şeritte boş kutu olarak görünmüyor:
+  // araçlar "Hesaplayın" kartlarıyla, haber/rehberler ayrı şeritle gösterilir.
+  const digerAraclar = calcToolsExcept(currentPath);
+  const seen = new Set<string>();
   const relatedArticles = [...relatedGuides, ...relatedNews].filter((a) => {
     const href = articlePath(a);
     if (seen.has(href)) return false;
     seen.add(href);
     return true;
   });
-  const relatedCards = [...toolCards, ...articlesToMansetCards(relatedArticles)].slice(0, 4);
+  const relatedCards = articlesToMansetCards(relatedArticles).slice(0, 4);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -58,13 +55,14 @@ export function CalcToolPage({
           <p className="mt-3 text-[15px] leading-relaxed text-neutral-700">{seo}</p>
         </section>
       </div>
-      <div className="mt-10">
-        <ArticleMansetStrip
-          label="Hesaplama araçları"
-          cards={relatedCards}
-          logoSrc={logoSrc}
-        />
+      <div className="mx-auto max-w-3xl">
+        <AracKartlari araclar={digerAraclar} baslik="Diğer hesaplama araçları" className="mt-10" />
       </div>
+      {relatedCards.length > 0 ? (
+        <div className="mt-10">
+          <ArticleMansetStrip label="İlgili haberler" cards={relatedCards} logoSrc={logoSrc} />
+        </div>
+      ) : null}
     </div>
   );
 }

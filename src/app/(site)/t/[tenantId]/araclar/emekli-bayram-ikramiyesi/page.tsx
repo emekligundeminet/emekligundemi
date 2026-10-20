@@ -13,7 +13,7 @@ export const dynamicParams = true;
 
 const PATH = "/araclar/emekli-bayram-ikramiyesi";
 const TITLE = "Emekli Bayram İkramiyesi";
-const DESC = "Güncel bayram ikramiyesi tutarı, ödeme tarihi ve bayrama kalan gün.";
+const DESC = "Size ne kadar bayram ikramiyesi ödenecek? Dul ve yetim aylığı alanlar dahil hesaplayın.";
 
 export function generateStaticParams() {
   return [] as { tenantId: string }[];

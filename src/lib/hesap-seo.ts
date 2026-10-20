@@ -1,32 +1,30 @@
 /** Uzun SEO metinleri. Oran değil; admin `seo_*` parametresi varsa onu kullan. */
 
 export const SEO_ZAM = `
-Emekli zam hesaplama aracı, SSK, Bağ-Kur ve memur emeklisi aylığının dönem zammından
-sonra yaklaşık ne kadar olacağını gösterir. Form, güncel maaşınızı ve emeklilik
-türünüzü alır; dönem oranı ile çarpar. Sonuç, en düşük emekli aylığı tabanının
-altına düşerse ekranda taban tamamlaması uyarısı çıkar.
+Emekli zam hesaplama aracı, SSK, Bağ-Kur ve memur emeklisi aylığının bir sonraki
+zam döneminde yaklaşık ne kadar olacağını gösterir. Emekli türünüzü seçip şu an
+aldığınız aylığı yazmanız yeterlidir.
 
-Zam dönemleri genellikle ocak ve temmuzda açıklanır. SSK ve Bağ-Kur tarafında
-altı aylık TÜFE toplamı esas alınır. Memur emeklisinde toplu sözleşme zammı ile
-enflasyon farkı birlikte uygulanır. Bu yüzden aynı dönemde iki grup farklı oran
-görebilir. Araçtaki oranlar sitede sabit yazılmaz; yayın kurulunun girdiği
-güncel parametrelerden okunur.
+Emekli aylıklarına yılda iki kez, ocak ve temmuzda zam yapılır. SSK ve Bağ-Kur
+emeklilerinin zammı, önceki altı ayın enflasyonu kadardır: ocak zammı için
+temmuz–aralık, temmuz zammı için ocak–haziran enflasyonu esas alınır. Altı aylık
+enflasyon, aylık oranlar toplanarak değil, TÜİK'in tüketici fiyat endeksindeki
+artışla bulunur. Örneğin Temmuz 2026'da SSK ve Bağ-Kur emeklilerine yüzde 17,76
+zam yapıldı.
 
-Hesaplama adımları şöyledir. Önce mevcut net veya bağlanan aylığı yazın. Türü
-seçin. Resmi oran açıklanmışsa o oran kullanılır. Henüz açıklanmamış aylar için
-senaryo sekmesinde TÜFE tahmini girebilirsiniz. Kümülatif oran, her ayın
-(1 + yüzde/100) çarpımından bir çıkarılmasıyla bulunur. Bu, aylık enflasyonların
-üst üste binmesini yansıtır; basit toplama değildir.
+Memur emeklilerinin (Emekli Sandığı) zammı iki parçadan oluşur: biten dönemde
+enflasyon toplu sözleşme zammını aştıysa aradaki fark ve yeni dönemin toplu
+sözleşme zammı. Temmuz 2026'da bu hesapla memur emeklilerine yüzde 13,52 zam
+yapıldı. 2027'nin ilk yarısı için toplu sözleşme zammı yüzde 5'tir.
 
-Sonuç kartında yeni maaş, zam tutarı ve dönem etiketi yer alır. Rakamlar
-tahmindir. SGK bağlama, intibak, ek ödeme, vergi ve icra kesintisi kişiye göre
-değişir. Resmi tutar e-Devlet ve banka hesabınızda görünür. Senaryo sekmesi
-projeksiyondur; “resmi oran henüz açıklanmadı” notunu dikkate alın.
+Dönem bitmeden yapılan hesaplar tahmindir. Araç, açıklanan ayların enflasyonunu
+kesin olarak kullanır, kalan aylar için tahmini bir oran varsayar ve şu ana kadar
+kesinleşen zammı ayrıca gösterir. En düşük emekli aylığı alanların artışı zam
+oranıyla değil, ayrı bir yasal düzenlemeyle belirlenir; Temmuz 2026'dan itibaren
+en düşük aylık 23.552 TL'dir.
 
-Aracı, zam haberi çıktığında veya maaşınızı planlarken kullanın. Oran değişince
-yönetim panelinden parametreyi güncellemek yeterlidir; sayfa bir saat içinde
-yenilenir. Kaynak olarak Resmî Gazete, TÜİK TÜFE bülteni ve SGK duyurularını
-izleyin. Bu metin hukuki görüş veya kesin hak doğurmaz.
+Sonuç vergi, icra kesintisi veya kişiye özel ödemeleri içermez. Kesin tutar
+e-Devlet'te ve aylığınızın yattığı banka hesabında görünür.
 `.replace(/\s+/g, " ").trim();
 
 export const SEO_IKRAMIYE = `
