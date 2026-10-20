@@ -19,7 +19,8 @@ export function araBaslikMi(satir: string) {
   );
 }
 
-export function govdeToHtml(haber: CekilenHaber) {
+/** kaynakSatiri=false: otomatik hat; en üste "Kaynak: …" satırı eklenmez. */
+export function govdeToHtml(haber: CekilenHaber, kaynakSatiri = true) {
   const paragraflar = haber.govde
     .split(/\n+/)
     .map((p) => p.trim())
@@ -27,7 +28,7 @@ export function govdeToHtml(haber: CekilenHaber) {
     .map((p) => (araBaslikMi(p) ? `<h2>${kacisHtml(p)}</h2>` : `<p>${kacisHtml(p)}</p>`))
     .join("");
   const kaynak = `<p><em>Kaynak: ${kacisHtml(haber.kaynak)} — <a href="${kacisHtml(haber.link)}">${kacisHtml(haber.link)}</a></em></p>`;
-  return `${kaynak}${paragraflar}`;
+  return kaynakSatiri ? `${kaynak}${paragraflar}` : paragraflar;
 }
 
 export function haberSlug(haber: CekilenHaber) {

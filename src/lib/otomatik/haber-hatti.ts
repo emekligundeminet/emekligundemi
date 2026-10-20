@@ -93,11 +93,8 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
         slug: haberSlug(haber),
         kapakBasligi: kapakIcinKisalt(haber.baslik),
         ozet: otomatikOzet(haber.govde),
-        html: govdeToHtml(haber),
+        html: govdeToHtml(haber, false),
         kategori: kategoriTahmin(haber.baslik, haber.govde, slugs),
-        // Boşsa site haber başlığını kullanır.
-        metaBaslik: null,
-        metaAciklama: otomatikOzet(haber.govde, 155),
       };
     }
     const yazi = await haberiYenidenYaz(haber, slugs);
@@ -109,8 +106,6 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
       ozet: yazi.ozet,
       html: yenidenYazilmisHtml(yazi),
       kategori: yazi.kategori,
-      metaBaslik: yazi.metaBaslik,
-      metaAciklama: yazi.metaAciklama,
     };
   };
 
@@ -141,9 +136,10 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
         author_id: yazar?.id ?? null,
         status: "draft",
         type: "news",
-        meta_title: yazi.metaBaslik,
-        meta_description: yazi.metaAciklama,
-        kaynaklar: [{ etiket: haber.kaynak, url: haber.link, dofollow: false }],
+        // Meta başlık/açıklama editör tarafından elle girilir; boşken site
+        // haber başlığını ve özeti kullanır. Kaynak listesi eklenmez.
+        meta_title: null,
+        meta_description: null,
       });
       hafiza.add(haber.link);
       sonuc.taslaklar.push({ baslik: taslak.title, id: taslak.id });

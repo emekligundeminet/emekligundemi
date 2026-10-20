@@ -84,19 +84,29 @@ function DuzKapak({ baslik, kategori }: { baslik: string; kategori: string }) {
 }
 
 /**
- * Stok fotoğraf: üstüne hiçbir şey yazılmaz (başlık, etiket, logo yok).
- * Discover temiz fotoğrafı tercih eder; başlık sitede görselin yanında/üstünde
- * HTML olarak zaten gösteriliyor. Sadece 1600×900'e kırpılır.
+ * Stok fotoğraf: üstüne yazı basılmaz. Aynı stok fotoğrafı kullanan başka
+ * sitelerden ayrışsın diye hafif bir marka tonu + yumuşak kenar karartması
+ * uygulanır; fotoğraf yine net okunur. Sonra 1600×900'e kırpılır.
  */
 function FotoKapak({ foto }: { foto: string }) {
+  const tam = { position: "absolute", top: 0, left: 0, width: "100%", height: "100%" } as const;
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", background: "#111" }}>
+    <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: "#111" }}>
       {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-      <img
-        src={foto}
-        width={KAPAK_W}
-        height={KAPAK_H}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      <img src={foto} width={KAPAK_W} height={KAPAK_H} style={{ ...tam, objectFit: "cover" }} />
+      {/* Sıcak marka tonu: kırmızıdan turuncuya, çok düşük opaklık. */}
+      <div
+        style={{
+          ...tam,
+          backgroundImage: "linear-gradient(135deg, rgba(247,21,21,0.14) 0%, rgba(255,140,40,0.08) 55%, rgba(30,20,60,0.12) 100%)",
+        }}
+      />
+      {/* Yumuşak kenar karartması (vinyet). */}
+      <div
+        style={{
+          ...tam,
+          backgroundImage: "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)",
+        }}
       />
     </div>
   );
