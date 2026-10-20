@@ -20,6 +20,7 @@ import type { Source } from "@/types/source";
 import { articlePath, parseContentType, type ContentType } from "@/lib/content-type";
 import { coverAltWarning } from "@/lib/cover-alt";
 import { StokKapakSecici } from "@/components/stok-kapak-secici";
+import { numaraliSlug, slugNumarasi } from "@/lib/slug-numara";
 import { ArticleSourcesEditor } from "@/components/article-sources-editor";
 import type { Kaynak } from "@/lib/kaynak";
 import { DISCOVER_COVER_MIN_WIDTH, publishFieldErrors } from "@/lib/discover";
@@ -62,7 +63,11 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
   const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.cover_url ?? null);
   const [coverAlt, setCoverAlt] = useState(initialData?.cover_alt ?? "");
   const [kaynaklar, setKaynaklar] = useState<Kaynak[]>(initialData?.kaynaklar ?? []);
-  const [slugLocked, setSlugLocked] = useState(!!initialData?.slug);
+  // Hiç yayınlanmamış, numaralı (otomatik) taslakta adres başlığı izler; numara korunur.
+  // Yayınlanmış haberin adresi kilitli kalır (değişirse eski link 404 olur).
+  const slugNo = slugNumarasi(initialData?.slug);
+  const baslikIzlesin = Boolean(slugNo) && !initialData?.published_at;
+  const [slugLocked, setSlugLocked] = useState(!!initialData?.slug && !baslikIzlesin);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
@@ -102,8 +107,8 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
 
   useEffect(() => {
     if (slugLocked) return;
-    setSlug(slugify(title));
-  }, [title, slugLocked]);
+    setSlug(slugNo ? numaraliSlug(title, slugNo) : slugify(title));
+  }, [title, slugLocked, slugNo]);
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -340,7 +345,7 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
                   size="sm"
                   className="h-7 shrink-0 text-xs"
                   onClick={() => {
-                    setSlug(slugify(title));
+                    setSlug(slugNo ? numaraliSlug(title, slugNo) : slugify(title));
                     setSlugLocked(true);
                   }}
                 >

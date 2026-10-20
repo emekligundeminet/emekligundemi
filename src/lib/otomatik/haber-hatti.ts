@@ -11,7 +11,7 @@ import { govdeToHtml, haberSlug } from "@/lib/haber-draft";
 import { tara, type CekilenHaber } from "@/lib/scrape";
 import { scrapeConfigFromSettings } from "@/lib/scrape-config";
 import { SITE_ORIGIN } from "@/lib/site";
-import { slugify } from "@/lib/slugify";
+import { numaraliSlug } from "@/lib/slug-numara";
 import { createArticle, getAuthors, getCategories } from "@/lib/store";
 import { lookupTenantByHostname } from "@/lib/tenant-lookup";
 import type { Json } from "@/types/db";
@@ -101,7 +101,7 @@ export async function haberHattiniCalistir(): Promise<HatSonucu> {
     return {
       uygun: yazi.uygun,
       baslik: yazi.baslik,
-      slug: slugify(yazi.baslik),
+      slug: numaraliSlug(yazi.baslik),
       kapakBasligi: yazi.kapakBasligi,
       ozet: yazi.ozet,
       html: yenidenYazilmisHtml(yazi),

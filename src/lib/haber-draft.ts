@@ -1,4 +1,4 @@
-import { slugify } from "@/lib/slugify";
+import { numaraliSlug } from "@/lib/slug-numara";
 import type { CekilenHaber } from "@/types/cekilen";
 
 function kacisHtml(s: string) {
@@ -31,12 +31,7 @@ export function govdeToHtml(haber: CekilenHaber, kaynakSatiri = true) {
   return kaynakSatiri ? `${kaynak}${paragraflar}` : paragraflar;
 }
 
+/** Başlıktan slug + rastgele 6 haneli numara (kaynak sitenin haber numarası kullanılmaz). */
 export function haberSlug(haber: CekilenHaber) {
-  const base = slugify(haber.baslik);
-  try {
-    const son = new URL(haber.link).pathname.match(/p(\d+)/i)?.[1];
-    return son ? `${base}-${son}` : base;
-  } catch {
-    return base;
-  }
+  return numaraliSlug(haber.baslik);
 }
